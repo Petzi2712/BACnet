@@ -6,7 +6,7 @@
     "name": "EnergieFuchs",
     "email": "t.tetzke.mobil@googlemail.com"
   },
-  "homepage": "https://github.com/Petzi2712/BACnet",
+  "homepage": "https://github.com/Petzi2712/ioBroker.bacnet-client",
   "license": "MIT",
   "keywords": [
     "bacnet",
@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Petzi2712/BACnet.git"
+    "url": "https://github.com/Petzi2712/ioBroker.bacnet-client.git"
   },
   "engines": {
     "node": ">=20"
@@ -63,7 +63,7 @@
     "dev-server": "dev-server"
   },
   "bugs": {
-    "url": "https://github.com/Petzi2712/BACnet/issues"
+    "url": "https://github.com/Petzi2712/ioBroker.bacnet-client/issues"
   },
   "readmeFilename": "README.md"
 }
