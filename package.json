@@ -13,7 +13,7 @@
     "bacnet-ip",
     "automation",
     "building-automation",
-    "iobroker"
+    "ioBroker"
   ],
   "repository": {
     "type": "git",

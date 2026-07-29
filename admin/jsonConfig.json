@@ -10,7 +10,11 @@
           "type": "staticText",
           "text": "network_help",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "bindAddress": {
           "type": "text",
@@ -18,14 +22,20 @@
           "help": "bindAddress_help",
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "subnetCidr": {
           "type": "text",
           "label": "subnetCidr",
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "broadcastAddress": {
           "type": "text",
@@ -33,7 +43,10 @@
           "help": "broadcastAddress_help",
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "port": {
           "type": "number",
@@ -42,14 +55,21 @@
           "max": 65535,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "additionalTargets": {
           "type": "chips",
           "label": "additionalTargets",
           "help": "additionalTargets_help",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "discoveryTimeoutMs": {
           "type": "number",
@@ -58,7 +78,10 @@
           "max": 120000,
           "newLine": true,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "apduTimeoutMs": {
           "type": "number",
@@ -67,7 +90,10 @@
           "max": 60000,
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "retries": {
           "type": "number",
@@ -76,7 +102,10 @@
           "max": 10,
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "lowLimit": {
           "type": "number",
@@ -85,7 +114,10 @@
           "max": 4194303,
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "highLimit": {
           "type": "number",
@@ -94,7 +126,10 @@
           "max": 4194303,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         }
       }
     },
@@ -106,10 +141,14 @@
           "type": "staticText",
           "text": "discovery_help",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "_startDiscovery": {
-          "type": "sendto",
+          "type": "sendTo",
           "label": "startDiscovery",
           "command": "startDiscovery",
           "variant": "contained",
@@ -118,39 +157,49 @@
           "timeout": 10000,
           "newLine": true,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "_cancelDiscovery": {
-          "type": "sendto",
+          "type": "sendTo",
           "label": "cancelDiscovery",
           "command": "cancelDiscovery",
           "variant": "outlined",
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "_discoveryStatus": {
-          "type": "sendto",
+          "type": "sendTo",
           "label": "discoveryStatus",
           "command": "getDiscoveryStatus",
           "variant": "outlined",
-          "copyToClipboard": true,
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "_listDevices": {
-          "type": "sendto",
+          "type": "sendTo",
           "label": "listDevices",
           "command": "listDevices",
           "variant": "outlined",
-          "copyToClipboard": true,
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "_importAll": {
-          "type": "sendto",
+          "type": "sendTo",
           "label": "importAll",
           "command": "importDevices",
           "data": {
@@ -161,7 +210,10 @@
           "timeout": 10000,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "autoImportAll": {
           "type": "checkbox",
@@ -169,7 +221,10 @@
           "help": "autoImportAll_help",
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "staleScansBeforeDelete": {
           "type": "number",
@@ -178,7 +233,10 @@
           "max": 100,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         }
       }
     },
@@ -191,7 +249,10 @@
           "label": "pollingEnabled",
           "newLine": true,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "pollIntervalMs": {
           "type": "number",
@@ -200,7 +261,10 @@
           "max": 86400000,
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "covEnabled": {
           "type": "checkbox",
@@ -208,7 +272,10 @@
           "help": "covEnabled_help",
           "newLine": false,
           "xs": 12,
-          "sm": 4
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "requestConcurrency": {
           "type": "number",
@@ -217,7 +284,10 @@
           "max": 32,
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "perDeviceConcurrency": {
           "type": "number",
@@ -226,20 +296,30 @@
           "max": 8,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "_writeWarning": {
           "type": "staticText",
           "text": "write_warning",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "writeEnabled": {
           "type": "checkbox",
           "label": "writeEnabled",
           "newLine": true,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "writePriority": {
           "type": "number",
@@ -248,14 +328,21 @@
           "max": 16,
           "newLine": false,
           "xs": 12,
-          "sm": 6
+          "sm": 6,
+          "md": 6,
+          "lg": 6,
+          "xl": 6
         },
         "writeAllowlist": {
           "type": "chips",
           "label": "writeAllowlist",
           "help": "writeAllowlist_help",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     },
@@ -267,7 +354,11 @@
           "type": "staticText",
           "text": "diagnostics_help",
           "newLine": true,
-          "xs": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     }

@@ -1,9 +1,12 @@
-name: Test
+name: Test and Release
 
 on:
   push:
     branches:
       - "main"
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-**"
   pull_request: {}
 
 concurrency:
@@ -19,11 +22,12 @@ jobs:
     steps:
       - uses: ioBroker/testing-action-check@v1
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           type-checking: true
           lint: true
 
   adapter-tests:
+    needs: check-and-lint
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -38,6 +42,7 @@ jobs:
           build: true
 
   architecture-and-package:
+    needs: check-and-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

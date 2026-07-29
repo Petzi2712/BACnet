@@ -122,6 +122,12 @@ See [Architecture](docs/ARCHITECTURE.md) and [German documentation](docs/de/READ
 - device-specific writeability cannot be inferred perfectly; the explicit allowlist remains mandatory
 - no built-in history database; use ioBroker history/database adapters
 
-## License and trademark
+## Changelog
+
+### 0.1.0 (2026-07-29)
+
+- Initial independent BACnet/IP client adapter with discovery, inventory, polling, COV, safe writes, Admin JSON Config, tests and CI.
+
+## License
 
 MIT License. This is not an official product of the BACnet Advocacy Group. BACnet® is a registered trademark of the American Society of Heating, Refrigerating and Air-Conditioning Engineers (ASHRAE).
