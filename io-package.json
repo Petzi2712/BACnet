@@ -1,0 +1,239 @@
+{
+  "common": {
+    "name": "bacnet-client",
+    "version": "0.1.0",
+    "news": {
+      "0.1.0": {
+        "en": "Initial BACnet/IP discovery, inventory, polling and safe-write MVP",
+        "de": "Erster BACnet/IP-MVP für Discovery, Inventar, Polling und sicheres Schreiben",
+        "ru": "Initial BACnet/IP MVP",
+        "pt": "Initial BACnet/IP MVP",
+        "nl": "Initial BACnet/IP MVP",
+        "fr": "Initial BACnet/IP MVP",
+        "it": "Initial BACnet/IP MVP",
+        "es": "Initial BACnet/IP MVP",
+        "pl": "Initial BACnet/IP MVP",
+        "uk": "Initial BACnet/IP MVP",
+        "zh-cn": "Initial BACnet/IP MVP"
+      }
+    },
+    "titleLang": {
+      "en": "BACnet Client",
+      "de": "BACnet-Client",
+      "ru": "BACnet Client",
+      "pt": "BACnet Client",
+      "nl": "BACnet Client",
+      "fr": "BACnet Client",
+      "it": "BACnet Client",
+      "es": "BACnet Client",
+      "pl": "BACnet Client",
+      "uk": "BACnet Client",
+      "zh-cn": "BACnet Client"
+    },
+    "desc": {
+      "en": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "de": "Erkennt und inventarisiert BACnet/IP-Geräte, fragt Werte ab und steuert sie sicher",
+      "ru": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "pt": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "nl": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "fr": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "it": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "es": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "pl": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "uk": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+      "zh-cn": "Discovers, inventories, polls and safely controls BACnet/IP devices"
+    },
+    "authors": [
+      "EnergieFuchs <t.tetzke.mobil@googlemail.com>"
+    ],
+    "keywords": [
+      "bacnet",
+      "bacnet-ip",
+      "automation",
+      "building automation"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "bacnet-client.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/Petzi2712/BACnet/main/admin/bacnet-client.png",
+    "readme": "https://github.com/Petzi2712/BACnet/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "protocols",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "poll",
+    "messagebox": true,
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.23"
+      }
+    ]
+  },
+  "native": {
+    "bindAddress": "0.0.0.0",
+    "subnetCidr": "",
+    "broadcastAddress": "255.255.255.255",
+    "port": 47808,
+    "discoveryTimeoutMs": 5000,
+    "lowLimit": null,
+    "highLimit": null,
+    "additionalTargets": [],
+    "apduTimeoutMs": 3000,
+    "retries": 2,
+    "requestConcurrency": 4,
+    "perDeviceConcurrency": 2,
+    "pollIntervalMs": 30000,
+    "pollingEnabled": true,
+    "covEnabled": false,
+    "writeEnabled": false,
+    "writePriority": 16,
+    "writeAllowlist": [],
+    "staleScansBeforeDelete": 3,
+    "autoImportAll": false
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "BACnet socket ready",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.socketReady",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "BACnet socket ready",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.discoveryRunning",
+      "type": "state",
+      "common": {
+        "role": "indicator.working",
+        "name": "Discovery running",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.discoveryProgress",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "Discovery progress",
+        "type": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.lastDiscovery",
+      "type": "state",
+      "common": {
+        "role": "date",
+        "name": "Last discovery",
+        "type": "number",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.discoveredDevices",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "Discovered devices",
+        "type": "number",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.importedDevices",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "Imported devices",
+        "type": "number",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.importedObjects",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "Imported objects",
+        "type": "number",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.lastError",
+      "type": "state",
+      "common": {
+        "role": "text",
+        "name": "Last error",
+        "type": "string",
+        "read": true,
+        "write": false,
+        "def": ""
+      },
+      "native": {}
+    }
+  ]
+}

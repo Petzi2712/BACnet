@@ -1,0 +1,69 @@
+{
+  "name": "iobroker.bacnet-client",
+  "version": "0.1.0",
+  "description": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+  "author": {
+    "name": "EnergieFuchs",
+    "email": "t.tetzke.mobil@googlemail.com"
+  },
+  "homepage": "https://github.com/Petzi2712/BACnet",
+  "license": "MIT",
+  "keywords": [
+    "bacnet",
+    "bacnet-ip",
+    "automation",
+    "building-automation",
+    "iobroker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Petzi2712/BACnet.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@bacnet-js/client": "^3.3.2",
+    "@iobroker/adapter-core": "^3.4.3"
+  },
+  "devDependencies": {
+    "@iobroker/adapter-dev": "^1.5.0",
+    "@iobroker/dev-server": "^0.8.0",
+    "@iobroker/eslint-config": "^2.3.4",
+    "@iobroker/testing": "^5.3.0",
+    "@tsconfig/node20": "^20.1.9",
+    "@types/iobroker": "npm:@iobroker/types@^7.2.2",
+    "@types/node": "^20.19.43",
+    "rimraf": "^6.1.3",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.3"
+  },
+  "main": "build/main.js",
+  "files": [
+    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).{json,json5}",
+    "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
+    "build/",
+    "io-package.json",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prebuild": "rimraf build",
+    "build": "build-adapter ts",
+    "watch": "build-adapter ts --watch",
+    "test:ts": "mocha --config test/mocharc.custom.json \"src/**/*.test.ts\"",
+    "test:package": "mocha test/package --exit",
+    "test:integration": "mocha --config test/mocharc.custom.json test/simulator.test.ts && mocha test/integration --exit",
+    "test:architecture": "mocha --config test/mocharc.custom.json test/architecture.test.ts",
+    "test:scaling": "mocha --config test/mocharc.custom.json test/scaling.test.ts",
+    "test": "npm run test:ts && npm run test:package && npm run test:architecture && npm run test:scaling",
+    "check": "tsc --noEmit",
+    "lint": "eslint -c eslint.config.mjs .",
+    "translate": "translate-adapter",
+    "dev-server": "dev-server"
+  },
+  "bugs": {
+    "url": "https://github.com/Petzi2712/BACnet/issues"
+  },
+  "readmeFilename": "README.md"
+}

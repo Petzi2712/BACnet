@@ -1,0 +1,275 @@
+{
+  "i18n": true,
+  "type": "tabs",
+  "items": {
+    "network": {
+      "type": "panel",
+      "label": "Network",
+      "items": {
+        "_networkInfo": {
+          "type": "staticText",
+          "text": "network_help",
+          "newLine": true,
+          "xs": 12
+        },
+        "bindAddress": {
+          "type": "text",
+          "label": "bindAddress",
+          "help": "bindAddress_help",
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "subnetCidr": {
+          "type": "text",
+          "label": "subnetCidr",
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        },
+        "broadcastAddress": {
+          "type": "text",
+          "label": "broadcastAddress",
+          "help": "broadcastAddress_help",
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "port": {
+          "type": "number",
+          "label": "port",
+          "min": 1,
+          "max": 65535,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        },
+        "additionalTargets": {
+          "type": "chips",
+          "label": "additionalTargets",
+          "help": "additionalTargets_help",
+          "newLine": true,
+          "xs": 12
+        },
+        "discoveryTimeoutMs": {
+          "type": "number",
+          "label": "discoveryTimeoutMs",
+          "min": 500,
+          "max": 120000,
+          "newLine": true,
+          "xs": 12,
+          "sm": 4
+        },
+        "apduTimeoutMs": {
+          "type": "number",
+          "label": "apduTimeoutMs",
+          "min": 250,
+          "max": 60000,
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "retries": {
+          "type": "number",
+          "label": "retries",
+          "min": 0,
+          "max": 10,
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "lowLimit": {
+          "type": "number",
+          "label": "lowLimit",
+          "min": 0,
+          "max": 4194303,
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "highLimit": {
+          "type": "number",
+          "label": "highLimit",
+          "min": 0,
+          "max": 4194303,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        }
+      }
+    },
+    "discovery": {
+      "type": "panel",
+      "label": "Discovery",
+      "items": {
+        "_discoveryHelp": {
+          "type": "staticText",
+          "text": "discovery_help",
+          "newLine": true,
+          "xs": 12
+        },
+        "_startDiscovery": {
+          "type": "sendto",
+          "label": "startDiscovery",
+          "command": "startDiscovery",
+          "variant": "contained",
+          "icon": "search",
+          "showProcess": true,
+          "timeout": 10000,
+          "newLine": true,
+          "xs": 12,
+          "sm": 4
+        },
+        "_cancelDiscovery": {
+          "type": "sendto",
+          "label": "cancelDiscovery",
+          "command": "cancelDiscovery",
+          "variant": "outlined",
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "_discoveryStatus": {
+          "type": "sendto",
+          "label": "discoveryStatus",
+          "command": "getDiscoveryStatus",
+          "variant": "outlined",
+          "copyToClipboard": true,
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "_listDevices": {
+          "type": "sendto",
+          "label": "listDevices",
+          "command": "listDevices",
+          "variant": "outlined",
+          "copyToClipboard": true,
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "_importAll": {
+          "type": "sendto",
+          "label": "importAll",
+          "command": "importDevices",
+          "data": {
+            "deviceInstances": []
+          },
+          "variant": "contained",
+          "showProcess": true,
+          "timeout": 10000,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        },
+        "autoImportAll": {
+          "type": "checkbox",
+          "label": "autoImportAll",
+          "help": "autoImportAll_help",
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "staleScansBeforeDelete": {
+          "type": "number",
+          "label": "staleScansBeforeDelete",
+          "min": 1,
+          "max": 100,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        }
+      }
+    },
+    "polling": {
+      "type": "panel",
+      "label": "Polling & Writing",
+      "items": {
+        "pollingEnabled": {
+          "type": "checkbox",
+          "label": "pollingEnabled",
+          "newLine": true,
+          "xs": 12,
+          "sm": 4
+        },
+        "pollIntervalMs": {
+          "type": "number",
+          "label": "pollIntervalMs",
+          "min": 1000,
+          "max": 86400000,
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "covEnabled": {
+          "type": "checkbox",
+          "label": "covEnabled",
+          "help": "covEnabled_help",
+          "newLine": false,
+          "xs": 12,
+          "sm": 4
+        },
+        "requestConcurrency": {
+          "type": "number",
+          "label": "requestConcurrency",
+          "min": 1,
+          "max": 32,
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "perDeviceConcurrency": {
+          "type": "number",
+          "label": "perDeviceConcurrency",
+          "min": 1,
+          "max": 8,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        },
+        "_writeWarning": {
+          "type": "staticText",
+          "text": "write_warning",
+          "newLine": true,
+          "xs": 12
+        },
+        "writeEnabled": {
+          "type": "checkbox",
+          "label": "writeEnabled",
+          "newLine": true,
+          "xs": 12,
+          "sm": 6
+        },
+        "writePriority": {
+          "type": "number",
+          "label": "writePriority",
+          "min": 1,
+          "max": 16,
+          "newLine": false,
+          "xs": 12,
+          "sm": 6
+        },
+        "writeAllowlist": {
+          "type": "chips",
+          "label": "writeAllowlist",
+          "help": "writeAllowlist_help",
+          "newLine": true,
+          "xs": 12
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "panel",
+      "label": "Diagnostics",
+      "items": {
+        "_diagnostics": {
+          "type": "staticText",
+          "text": "diagnostics_help",
+          "newLine": true,
+          "xs": 12
+        }
+      }
+    }
+  }
+}
