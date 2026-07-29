@@ -36,6 +36,6 @@
   "writeEnabled": "Enable BACnet writes",
   "writePriority": "BACnet write priority (1–16)",
   "writeAllowlist": "Writable stable point IDs",
-  "writeAllowlist_help": "Example: devices.d_1234.types.analog_output.o_7.present_value",
+  "writeAllowlist_help": "Пример: devices.d_1234.types.analog_output.o_7.present_value",
   "diagnostics_help": "Состояние выполнения доступно в info.*. Команда getDiagnostics возвращает обезличенный отчёт с сокетом, активным заданием, очередью и счётчиками."
 }

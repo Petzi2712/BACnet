@@ -36,6 +36,6 @@
   "writeEnabled": "Enable BACnet writes",
   "writePriority": "BACnet write priority (1–16)",
   "writeAllowlist": "Writable stable point IDs",
-  "writeAllowlist_help": "Example: devices.d_1234.types.analog_output.o_7.present_value",
+  "writeAllowlist_help": "Exemplo: devices.d_1234.types.analog_output.o_7.present_value",
   "diagnostics_help": "O estado de execução está disponível em info.*. Use getDiagnostics para obter um relatório anonimizado com socket, tarefa ativa, fila e contadores."
 }
