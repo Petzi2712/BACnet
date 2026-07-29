@@ -151,7 +151,7 @@ class InventoryReader {
   async read(address, objectId, propertyId, arrayIndex = 4294967295) {
     return (0, import_queue.withRetry)(
       async () => (await this.client.readProperty(address, objectId, propertyId, { arrayIndex })).values,
-      { retries: this.options.retries, baseDelayMs: 100, maxDelayMs: 2e3 }
+      { retries: this.options.retries, baseDelayMs: 100, maxDelayMs: 2e3, delay: this.options.delay }
     );
   }
 }

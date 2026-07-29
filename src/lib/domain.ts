@@ -63,14 +63,14 @@ export interface BacnetPort {
 
 export interface TimerApi {
 	now(): number;
-	setTimeout(callback: () => void, milliseconds: number): ReturnType<typeof setTimeout>;
-	clearTimeout(timer: ReturnType<typeof setTimeout>): void;
+	schedule(callback: () => void, milliseconds: number): unknown;
+	cancel(timer: unknown): void;
 }
 
 export const systemTimer: TimerApi = {
 	now: Date.now,
-	setTimeout,
-	clearTimeout,
+	schedule: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
+	cancel: timer => globalThis.clearTimeout(timer as ReturnType<typeof globalThis.setTimeout>),
 };
 
 export interface DiscoveredDevice {

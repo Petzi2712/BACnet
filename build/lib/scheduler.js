@@ -21,11 +21,13 @@ __export(scheduler_exports, {
   NonOverlappingScheduler: () => NonOverlappingScheduler
 });
 module.exports = __toCommonJS(scheduler_exports);
+var import_domain = require("./domain");
 class NonOverlappingScheduler {
-  constructor(task, intervalMs, onError) {
+  constructor(task, intervalMs, onError, timerApi = import_domain.systemTimer) {
     this.task = task;
     this.intervalMs = intervalMs;
     this.onError = onError;
+    this.timerApi = timerApi;
   }
   timer;
   running = false;
@@ -40,7 +42,7 @@ class NonOverlappingScheduler {
   stop() {
     this.stopped = true;
     if (this.timer) {
-      clearTimeout(this.timer);
+      this.timerApi.cancel(this.timer);
     }
     this.timer = void 0;
   }
@@ -59,7 +61,7 @@ class NonOverlappingScheduler {
     return true;
   }
   schedule(delay) {
-    this.timer = setTimeout(async () => {
+    this.timer = this.timerApi.schedule(async () => {
       await this.runNow();
       if (!this.stopped) {
         this.schedule(this.intervalMs);

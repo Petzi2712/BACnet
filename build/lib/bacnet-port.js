@@ -32,11 +32,10 @@ __export(bacnet_port_exports, {
 });
 module.exports = __toCommonJS(bacnet_port_exports);
 var import_client = __toESM(require("@bacnet-js/client"));
+var import_domain = require("./domain");
 class BacnetJsPort {
-  client;
-  listening;
-  covListeners = /* @__PURE__ */ new Map();
-  constructor(options, onError = () => void 0) {
+  constructor(options, onError = () => void 0, timer = import_domain.systemTimer) {
+    this.timer = timer;
     this.client = new import_client.default(options);
     this.client.on("error", onError);
     this.listening = new Promise((resolve, reject) => {
@@ -44,6 +43,9 @@ class BacnetJsPort {
       this.client.once("error", reject);
     });
   }
+  client;
+  listening;
+  covListeners = /* @__PURE__ */ new Map();
   on(event, listener) {
     this.client.on(event, listener);
   }
@@ -67,17 +69,17 @@ class BacnetJsPort {
   }
   waitUntilListening(timeoutMs) {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
+      const timeout = this.timer.schedule(
         () => reject(new Error("BACnet UDP socket did not start listening in time")),
         timeoutMs
       );
       this.listening.then(
         () => {
-          clearTimeout(timeout);
+          this.timer.cancel(timeout);
           resolve();
         },
         (error) => {
-          clearTimeout(timeout);
+          this.timer.cancel(timeout);
           reject(error instanceof Error ? error : new Error(String(error)));
         }
       );

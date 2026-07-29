@@ -40,11 +40,10 @@ export interface RetryOptions {
 	baseDelayMs: number;
 	maxDelayMs: number;
 	random?: () => number;
-	delay?: (milliseconds: number) => Promise<void>;
+	delay: (milliseconds: number) => Promise<void>;
 }
 export async function withRetry<T>(operation: (attempt: number) => Promise<T>, options: RetryOptions): Promise<T> {
 	const random = options.random ?? Math.random;
-	const delay = options.delay ?? (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)));
 	let lastError: unknown;
 	for (let attempt = 0; attempt <= options.retries; attempt++) {
 		try {
@@ -56,7 +55,7 @@ export async function withRetry<T>(operation: (attempt: number) => Promise<T>, o
 			}
 			const exponential = Math.min(options.maxDelayMs, options.baseDelayMs * 2 ** attempt);
 			const jittered = Math.max(0, Math.round(exponential * (0.8 + random() * 0.4)));
-			await delay(jittered);
+			await options.delay(jittered);
 		}
 	}
 	throw lastError;

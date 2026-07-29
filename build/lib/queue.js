@@ -61,9 +61,8 @@ class BoundedQueue {
   }
 }
 async function withRetry(operation, options) {
-  var _a, _b;
+  var _a;
   const random = (_a = options.random) != null ? _a : Math.random;
-  const delay = (_b = options.delay) != null ? _b : ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
   let lastError;
   for (let attempt = 0; attempt <= options.retries; attempt++) {
     try {
@@ -75,7 +74,7 @@ async function withRetry(operation, options) {
       }
       const exponential = Math.min(options.maxDelayMs, options.baseDelayMs * 2 ** attempt);
       const jittered = Math.max(0, Math.round(exponential * (0.8 + random() * 0.4)));
-      await delay(jittered);
+      await options.delay(jittered);
     }
   }
   throw lastError;

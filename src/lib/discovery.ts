@@ -36,7 +36,7 @@ export class DiscoveryManager {
 		};
 		let finish!: (value: DiscoveredDevice[]) => void;
 		const done = new Promise<DiscoveredDevice[]>(resolve => (finish = resolve));
-		const timeoutRef: { value?: ReturnType<typeof setTimeout> } = {};
+		const timeoutRef: { value?: unknown } = {};
 		let finished = false;
 
 		const listener = (message: IAmMessage): void => {
@@ -79,13 +79,13 @@ export class DiscoveryManager {
 			finished = true;
 			this.client.off("iAm", listener);
 			if (timeoutRef.value) {
-				this.timer.clearTimeout(timeoutRef.value);
+				this.timer.cancel(timeoutRef.value);
 			}
 			progress.status = status;
 			progress.finishedAt = this.timer.now();
 			finish([...devices.values()]);
 		};
-		timeoutRef.value = this.timer.setTimeout(() => complete("completed"), options.durationMs);
+		timeoutRef.value = this.timer.schedule(() => complete("completed"), options.durationMs);
 
 		const job: DiscoveryJob = {
 			progress,

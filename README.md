@@ -130,4 +130,6 @@ See [Architecture](docs/ARCHITECTURE.md) and [German documentation](docs/de/READ
 
 ## License
 
+Copyright (c) 2026 EnergieFuchs <t.tetzke.mobil@googlemail.com>
+
 MIT License. This is not an official product of the BACnet Advocacy Group. BACnet® is a registered trademark of the American Society of Heating, Refrigerating and Air-Conditioning Engineers (ASHRAE).

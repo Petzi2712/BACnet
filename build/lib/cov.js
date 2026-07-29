@@ -63,7 +63,7 @@ class CovManager {
     this.active.clear();
     await new import_queue.BoundedQueue(4).map(subscriptions, async (subscription) => {
       if (subscription.timer) {
-        this.timer.clearTimeout(subscription.timer);
+        this.timer.cancel(subscription.timer);
       }
       try {
         await this.client.subscribeCov(
@@ -87,7 +87,7 @@ class CovManager {
       false,
       subscription.lifetimeSeconds
     );
-    subscription.timer = this.timer.setTimeout(
+    subscription.timer = this.timer.schedule(
       () => {
         void this.renew(subscription);
       },

@@ -1,11 +1,14 @@
+import { systemTimer, type TimerApi } from "./domain";
+
 export class NonOverlappingScheduler {
-	private timer?: ReturnType<typeof setTimeout>;
+	private timer?: unknown;
 	private running = false;
 	private stopped = true;
 	public constructor(
 		private readonly task: () => Promise<void>,
 		private readonly intervalMs: number,
 		private readonly onError: (error: unknown) => void,
+		private readonly timerApi: TimerApi = systemTimer,
 	) {}
 	public start(): void {
 		if (!this.stopped) {
@@ -17,7 +20,7 @@ export class NonOverlappingScheduler {
 	public stop(): void {
 		this.stopped = true;
 		if (this.timer) {
-			clearTimeout(this.timer);
+			this.timerApi.cancel(this.timer);
 		}
 		this.timer = undefined;
 	}
@@ -37,7 +40,7 @@ export class NonOverlappingScheduler {
 	}
 
 	private schedule(delay: number): void {
-		this.timer = setTimeout(async () => {
+		this.timer = this.timerApi.schedule(async () => {
 			await this.runNow();
 			if (!this.stopped) {
 				this.schedule(this.intervalMs);

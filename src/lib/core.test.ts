@@ -262,7 +262,12 @@ describe("inventory reads and reconciliation", () => {
 				});
 			},
 		} as unknown as BacnetPort;
-		const reader = new InventoryReader(port, { concurrency: 2, retries: 0, rpmBatchSize: 4 });
+		const reader = new InventoryReader(port, {
+			concurrency: 2,
+			retries: 0,
+			rpmBatchSize: 4,
+			delay: () => Promise.resolve(),
+		});
 		const objects = await reader.readObjectList({
 			deviceInstance: 10,
 			address: { address: "192.0.2.10:47808" },
@@ -365,11 +370,11 @@ class FakeTimer implements TimerApi {
 	public now(): number {
 		return this.time;
 	}
-	public setTimeout(callback: () => void): ReturnType<typeof setTimeout> {
+	public schedule(callback: () => void): unknown {
 		this.callback = callback;
-		return 1 as unknown as ReturnType<typeof setTimeout>;
+		return 1;
 	}
-	public clearTimeout(): void {
+	public cancel(): void {
 		this.callback = undefined;
 	}
 	public fire(): void {

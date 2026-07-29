@@ -11,7 +11,7 @@ import BACnetClient, {
 	type WritePropertyOptions,
 	type WhoIsOptions,
 } from "@bacnet-js/client";
-import type { BacnetPort, CovNotification, IAmMessage } from "./domain";
+import { systemTimer, type BacnetPort, type CovNotification, type IAmMessage, type TimerApi } from "./domain";
 
 export class BacnetJsPort implements BacnetPort {
 	private readonly client: BACnetClient;
@@ -21,7 +21,11 @@ export class BacnetJsPort implements BacnetPort {
 		{ confirmed: (message: CovNotification) => void; unconfirmed: (message: CovNotification) => void }
 	>();
 
-	public constructor(options: ClientOptions, onError: (error: Error) => void = () => undefined) {
+	public constructor(
+		options: ClientOptions,
+		onError: (error: Error) => void = () => undefined,
+		private readonly timer: TimerApi = systemTimer,
+	) {
 		this.client = new BACnetClient(options);
 		this.client.on("error", onError);
 		this.listening = new Promise<void>((resolve, reject) => {
@@ -57,17 +61,17 @@ export class BacnetJsPort implements BacnetPort {
 
 	public waitUntilListening(timeoutMs: number): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			const timeout = setTimeout(
+			const timeout = this.timer.schedule(
 				() => reject(new Error("BACnet UDP socket did not start listening in time")),
 				timeoutMs,
 			);
 			this.listening.then(
 				() => {
-					clearTimeout(timeout);
+					this.timer.cancel(timeout);
 					resolve();
 				},
 				error => {
-					clearTimeout(timeout);
+					this.timer.cancel(timeout);
 					reject(error instanceof Error ? error : new Error(String(error)));
 				},
 			);

@@ -27,6 +27,7 @@ export interface InventoryOptions {
 	concurrency: number;
 	retries: number;
 	rpmBatchSize: number;
+	delay: (milliseconds: number) => Promise<void>;
 }
 export class InventoryReader {
 	private readonly objectQueue: BoundedQueue;
@@ -151,7 +152,7 @@ export class InventoryReader {
 	): Promise<ApplicationData[]> {
 		return withRetry(
 			async () => (await this.client.readProperty(address, objectId, propertyId, { arrayIndex })).values,
-			{ retries: this.options.retries, baseDelayMs: 100, maxDelayMs: 2000 },
+			{ retries: this.options.retries, baseDelayMs: 100, maxDelayMs: 2000, delay: this.options.delay },
 		);
 	}
 }

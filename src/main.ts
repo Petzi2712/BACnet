@@ -13,8 +13,7 @@ import * as utils from "@iobroker/adapter-core";
 import { BacnetJsPort } from "./lib/bacnet-port";
 import { CovManager } from "./lib/cov";
 import { DiscoveryManager, type DiscoveryJob } from "./lib/discovery";
-import type { BacnetPort, DeviceInventory, DiscoveredDevice, JobProgress } from "./lib/domain";
-import { systemTimer } from "./lib/domain";
+import type { BacnetPort, DeviceInventory, DiscoveredDevice, JobProgress, TimerApi } from "./lib/domain";
 import { deviceSegment, objectSegment, objectTypeSegment, pointId, propertySegment } from "./lib/ids";
 import { InventoryReader } from "./lib/inventory";
 import { mapApplicationData } from "./lib/mapper";
@@ -41,6 +40,11 @@ class BacnetClientAdapter extends utils.Adapter {
 	private lastConfirmed = new Map<string, ioBroker.StateValue>();
 	private activeImport?: ActiveImport;
 	private unloading = false;
+	private readonly timer: TimerApi = {
+		now: Date.now,
+		schedule: (callback, milliseconds) => this.setTimeout(callback, milliseconds),
+		cancel: timer => this.clearTimeout(timer as ioBroker.Timeout | undefined),
+	};
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({ ...options, name: "bacnet-client" });
@@ -76,16 +80,21 @@ class BacnetClientAdapter extends utils.Adapter {
 				error => {
 					void this.recordError("bacnet", error);
 				},
+				this.timer,
 			);
-			this.discovery = new DiscoveryManager(this.port, systemTimer);
+			this.discovery = new DiscoveryManager(this.port, this.timer);
 			this.inventoryReader = new InventoryReader(this.port, {
 				concurrency: clampInteger(this.config.perDeviceConcurrency, 1, 8, 2),
 				retries: clampInteger(this.config.retries, 0, 10, 2),
 				rpmBatchSize: 12,
+				delay: milliseconds =>
+					new Promise(resolve => {
+						this.timer.schedule(resolve, milliseconds);
+					}),
 			});
 			this.cov = new CovManager(
 				this.port,
-				systemTimer,
+				this.timer,
 				(target, notification) => {
 					const device = this.discovered.get(target.deviceInstance);
 					if (!device) {
@@ -119,6 +128,7 @@ class BacnetClientAdapter extends utils.Adapter {
 					() => this.pollImportedPoints(),
 					clampInteger(this.config.pollIntervalMs, 1000, 86400000, 30000),
 					error => this.recordError("poll", error),
+					this.timer,
 				);
 				this.scheduler.start();
 			}

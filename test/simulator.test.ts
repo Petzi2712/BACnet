@@ -26,6 +26,7 @@ describe("controlled BACnet device integration", () => {
 			concurrency: 2,
 			retries: 0,
 			rpmBatchSize: 4,
+			delay: () => Promise.resolve(),
 		});
 		const inventory = await reader.importDevice(device);
 		expect(inventory.objects).to.have.length(2);

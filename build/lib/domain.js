@@ -23,8 +23,8 @@ __export(domain_exports, {
 module.exports = __toCommonJS(domain_exports);
 const systemTimer = {
   now: Date.now,
-  setTimeout,
-  clearTimeout
+  schedule: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
+  cancel: (timer) => globalThis.clearTimeout(timer)
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

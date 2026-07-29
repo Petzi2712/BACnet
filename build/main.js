@@ -27,7 +27,6 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_bacnet_port = require("./lib/bacnet-port");
 var import_cov = require("./lib/cov");
 var import_discovery = require("./lib/discovery");
-var import_domain = require("./lib/domain");
 var import_ids = require("./lib/ids");
 var import_inventory = require("./lib/inventory");
 var import_mapper = require("./lib/mapper");
@@ -48,6 +47,11 @@ class BacnetClientAdapter extends utils.Adapter {
   lastConfirmed = /* @__PURE__ */ new Map();
   activeImport;
   unloading = false;
+  timer = {
+    now: Date.now,
+    schedule: (callback, milliseconds) => this.setTimeout(callback, milliseconds),
+    cancel: (timer) => this.clearTimeout(timer)
+  };
   constructor(options = {}) {
     super({ ...options, name: "bacnet-client" });
     this.on("ready", this.onReady.bind(this));
@@ -80,17 +84,21 @@ class BacnetClientAdapter extends utils.Adapter {
         },
         (error) => {
           void this.recordError("bacnet", error);
-        }
+        },
+        this.timer
       );
-      this.discovery = new import_discovery.DiscoveryManager(this.port, import_domain.systemTimer);
+      this.discovery = new import_discovery.DiscoveryManager(this.port, this.timer);
       this.inventoryReader = new import_inventory.InventoryReader(this.port, {
         concurrency: clampInteger(this.config.perDeviceConcurrency, 1, 8, 2),
         retries: clampInteger(this.config.retries, 0, 10, 2),
-        rpmBatchSize: 12
+        rpmBatchSize: 12,
+        delay: (milliseconds) => new Promise((resolve) => {
+          this.timer.schedule(resolve, milliseconds);
+        })
       });
       this.cov = new import_cov.CovManager(
         this.port,
-        import_domain.systemTimer,
+        this.timer,
         (target, notification) => {
           const device = this.discovered.get(target.deviceInstance);
           if (!device) {
@@ -123,7 +131,8 @@ class BacnetClientAdapter extends utils.Adapter {
         this.scheduler = new import_scheduler.NonOverlappingScheduler(
           () => this.pollImportedPoints(),
           clampInteger(this.config.pollIntervalMs, 1e3, 864e5, 3e4),
-          (error) => this.recordError("poll", error)
+          (error) => this.recordError("poll", error),
+          this.timer
         );
         this.scheduler.start();
       }
