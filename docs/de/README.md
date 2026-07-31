@@ -52,4 +52,4 @@ Schreiben ist standardmäßig aus. Zusätzlich zur globalen Freigabe muss die vo
 
 ## Grenzen
 
-Direktes MS/TP, BACnet/SC, eine vollständige BBMD/Foreign-Device-Lösung und semantische Decoder für alle komplexen BACnet-Strukturen sind nicht Bestandteil von 0.2.0. MS/TP-Geräte können über einen vorhandenen BACnet-Router erscheinen.
+Direktes MS/TP, BACnet/SC, eine vollständige BBMD/Foreign-Device-Lösung und semantische Decoder für alle komplexen BACnet-Strukturen sind nicht Bestandteil von 0.3.0. MS/TP-Geräte können über einen vorhandenen BACnet-Router erscheinen.

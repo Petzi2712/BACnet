@@ -2,7 +2,7 @@
 
 `bacnet-client` is an independent ioBroker BACnet/IP client and data collector. It discovers devices with Who-Is/I-Am, imports their Device `Object_List`, reads available properties, polls process values, maintains optional COV subscriptions, and exposes the result as a stable ioBroker object tree.
 
-Version 0.2.0 adds a device and data-point workspace in the adapter settings. BACnet MS/TP devices may appear through a BACnet router; direct serial MS/TP and BACnet/SC are outside this release.
+Version 0.3.0 adds a fully German administration view, descriptions for individual data points, readable device names and persistent manual object metadata. BACnet MS/TP devices may appear through a BACnet router; direct serial MS/TP and BACnet/SC are outside this release.
 
 ## Highlights
 
@@ -141,6 +141,13 @@ See [Architecture](docs/ARCHITECTURE.md) and [German documentation](docs/de/READ
 - no built-in history database; use ioBroker history/database adapters
 
 ## Changelog
+
+### 0.3.0 (2026-07-31)
+
+- German administration UI and standard ioBroker action buttons
+- Per-point descriptions used as visible names in the object tree
+- Device object names are shown while technical IDs stay stable
+- Manual object metadata such as unit, role, min, max and step survives adapter updates
 
 ### 0.2.0 (2026-07-31)
 

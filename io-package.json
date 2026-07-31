@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "bacnet-client",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "de": "Deutsche Administration, Beschreibungen je Datenpunkt, lesbare Gerätenamen und dauerhaft erhaltene manuelle Objektangaben",
+        "ru": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "pt": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "nl": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "fr": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "it": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "es": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "pl": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "uk": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
+        "zh-cn": "German administration, per-point descriptions, readable device names and persistent manual object metadata"
+      },
       "0.2.0": {
         "en": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
         "de": "Auswählbare Gerätedatenpunkte, Live-Gerätestatus, Volltextsuche, Beschreibungen und ein sauberer Objektbaum",

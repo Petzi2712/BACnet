@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
 	<link rel="stylesheet" type="text/css" href="../../css/adapter.css">
 	<script src="../../lib/js/jquery-3.2.1.min.js"></script>
+	<script src="../../lib/js/materialize.js"></script>
 	<script src="../../socket.io/socket.io.js"></script>
 	<script src="../../js/translate.js"></script>
 	<script src="../../js/adapter-settings.js"></script>
@@ -23,7 +25,7 @@
 			</div>
 		</header>
 
-		<nav class="tab-bar" aria-label="Configuration sections">
+		<nav class="tab-bar" aria-label="Konfigurationsbereiche">
 			<button type="button" class="tab-button active" data-tab="devices" data-i18n="devicesAndPoints"></button>
 			<button type="button" class="tab-button" data-tab="network" data-i18n="network"></button>
 			<button type="button" class="tab-button" data-tab="polling" data-i18n="pollingAndWriting"></button>
@@ -58,7 +60,7 @@
 					<div class="search-control">
 						<span aria-hidden="true">⌕</span>
 						<input id="catalog-search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
-						<button type="button" id="clear-search" aria-label="Clear search">×</button>
+						<button type="button" id="clear-search" aria-label="Suche löschen">×</button>
 					</div>
 				</div>
 
@@ -214,7 +216,10 @@
 				.map(item => ({
 					deviceInstance: Number(item.deviceInstance),
 					description: typeof item.description === "string" ? item.description : "",
-					selectedPoints: [...new Set(Array.isArray(item.selectedPoints) ? item.selectedPoints : [])].sort()
+					selectedPoints: [...new Set(Array.isArray(item.selectedPoints) ? item.selectedPoints : [])].sort(),
+					pointDescriptions: item.pointDescriptions && typeof item.pointDescriptions === "object"
+						? { ...item.pointDescriptions }
+						: {}
 				}))
 				.sort((a, b) => a.deviceInstance - b.deviceInstance);
 		}
@@ -222,7 +227,7 @@
 		function ensureSelection(deviceInstance) {
 			let selection = settings.deviceSelections.find(item => item.deviceInstance === deviceInstance);
 			if (!selection) {
-				selection = { deviceInstance, description: "", selectedPoints: [] };
+				selection = { deviceInstance, description: "", selectedPoints: [], pointDescriptions: {} };
 				settings.deviceSelections.push(selection);
 				settings.deviceSelections.sort((a, b) => a.deviceInstance - b.deviceInstance);
 			}
@@ -285,7 +290,7 @@
 					.map(escapeHtml)
 					.join(" · ");
 				const pointRows = matchingPoints.map(point => `
-					<label class="point-row">
+					<div class="point-row">
 						<input class="point-checkbox" type="checkbox"
 							data-device="${device.deviceInstance}"
 							data-point="${escapeHtml(point.id)}"
@@ -295,7 +300,15 @@
 							<span>${escapeHtml(point.objectTypeName)} ${point.objectInstance} · ${escapeHtml(point.propertyName)}</span>
 						</span>
 						<code>${escapeHtml(point.id)}</code>
-					</label>
+						<label class="point-description-field">
+							<span>${tr("pointDescription")}</span>
+							<input class="point-description" type="text" maxlength="240"
+								data-device="${device.deviceInstance}"
+								data-point="${escapeHtml(point.id)}"
+								value="${escapeHtml(selection.pointDescriptions[point.id] || point.userDescription || "")}"
+								placeholder="${escapeHtml(point.objectName)}">
+						</label>
+					</div>
 				`).join("");
 
 				cards.push(`
@@ -313,13 +326,7 @@
 						</button>
 						<div class="device-content ${expanded ? "" : "collapsed"}">
 							<div class="device-controls">
-								<label class="field description-field">
-									<span>${tr("manualDescription")}</span>
-									<input class="device-description" type="text" maxlength="240"
-										data-device="${device.deviceInstance}"
-										value="${escapeHtml(selection.description)}"
-										placeholder="${escapeHtml(tr("descriptionPlaceholder"))}">
-								</label>
+								<div></div>
 								<div class="point-actions">
 									<button type="button" class="secondary-action import-device" data-device="${device.deviceInstance}">
 										${device.imported ? tr("rereadDevice") : tr("readDevice")}
@@ -508,8 +515,9 @@
 				}
 			});
 			document.getElementById("device-list").addEventListener("input", event => {
-				if (event.target.classList.contains("device-description")) {
-					ensureSelection(Number(event.target.dataset.device)).description = event.target.value;
+				if (event.target.classList.contains("point-description")) {
+					const selection = ensureSelection(Number(event.target.dataset.device));
+					selection.pointDescriptions[event.target.dataset.point] = event.target.value;
 					notifyChanged();
 				}
 			});
