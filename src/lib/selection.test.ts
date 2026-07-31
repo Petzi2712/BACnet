@@ -14,6 +14,10 @@ describe("device point selections", () => {
 					[point]: "  Zulufttemperatur  ",
 					"devices.d_1234.types.analog_input.o_8.present_value": "Nicht ausgewählt",
 				},
+				pointUnits: {
+					[point]: "  °C  ",
+					"devices.d_1234.types.analog_input.o_8.present_value": "%",
+				},
 			},
 			{ deviceInstance: -1, description: "invalid", selectedPoints: [] },
 		]);
@@ -23,6 +27,7 @@ describe("device point selections", () => {
 				description: "AHU",
 				selectedPoints: [point],
 				pointDescriptions: { [point]: "Zulufttemperatur" },
+				pointUnits: { [point]: "°C" },
 			},
 		]);
 		expect([...selectedPointSet(normalized)]).to.deep.equal([point]);

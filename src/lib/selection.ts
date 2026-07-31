@@ -3,6 +3,7 @@ export interface DeviceSelection {
 	description: string;
 	selectedPoints: string[];
 	pointDescriptions: Record<string, string>;
+	pointUnits: Record<string, string>;
 }
 
 export function normalizeDeviceSelections(value: unknown): DeviceSelection[] {
@@ -39,11 +40,20 @@ export function normalizeDeviceSelections(value: unknown): DeviceSelection[] {
 				}
 			}
 		}
+		const pointUnits: Record<string, string> = {};
+		if (candidate.pointUnits && typeof candidate.pointUnits === "object") {
+			for (const [point, unit] of Object.entries(candidate.pointUnits)) {
+				if (selectedPoints.includes(point) && typeof unit === "string" && unit.trim()) {
+					pointUnits[point] = unit.trim();
+				}
+			}
+		}
 		result.set(candidate.deviceInstance!, {
 			deviceInstance: candidate.deviceInstance!,
 			description: typeof candidate.description === "string" ? candidate.description.trim() : "",
 			selectedPoints,
 			pointDescriptions,
+			pointUnits,
 		});
 	}
 	return [...result.values()].sort((a, b) => a.deviceInstance - b.deviceInstance);

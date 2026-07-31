@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "bacnet-client",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "news": {
+      "0.3.1": {
+        "en": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "de": "Feste Aktionsleiste, zuverlässige Datenpunktbeschreibungen, einstellbare Einheiten und durchgehend deutsche Administration",
+        "ru": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "pt": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "nl": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "fr": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "it": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "es": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "pl": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "uk": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration",
+        "zh-cn": "Fixed action bar, reliable point descriptions, configurable units and consistently German administration"
+      },
       "0.3.0": {
         "en": "German administration, per-point descriptions, readable device names and persistent manual object metadata",
         "de": "Deutsche Administration, Beschreibungen je Datenpunkt, lesbare Gerätenamen und dauerhaft erhaltene manuelle Objektangaben",

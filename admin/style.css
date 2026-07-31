@@ -19,9 +19,19 @@
 
 body {
 	margin: 0;
+	padding-bottom: 64px;
 	background: #eef4f7;
 	color: var(--ink);
 	font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.dialog-config-buttons.footer {
+	position: fixed !important;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1000;
+	box-shadow: 0 -3px 14px rgba(22, 52, 70, 0.18);
 }
 
 button,
@@ -449,7 +459,7 @@ main {
 
 .point-row {
 	display: grid;
-	grid-template-columns: auto minmax(190px, 0.8fr) minmax(220px, 1fr) minmax(220px, 1fr);
+	grid-template-columns: auto minmax(180px, 0.8fr) minmax(200px, 1fr) minmax(210px, 1fr) minmax(120px, 0.45fr);
 	align-items: center;
 	gap: 12px;
 	padding: 10px 12px;
@@ -457,23 +467,25 @@ main {
 	cursor: pointer;
 }
 
-.point-description-field span {
+.point-meta-field span {
 	display: block;
 	margin-bottom: 3px;
 	color: var(--muted);
 	font-size: 12px;
 }
 
-.point-description-field input {
+.point-meta-field input {
 	width: 100%;
 	min-height: 38px;
 	padding: 7px 10px;
 	border: 1px solid #aabac4;
 	border-radius: 7px;
 	background: #fff;
+	cursor: text;
+	pointer-events: auto;
 }
 
-.point-description-field input:focus {
+.point-meta-field input:focus {
 	border-color: var(--bac-blue);
 	outline: 0;
 	box-shadow: 0 0 0 3px rgba(7, 143, 202, 0.13);
@@ -609,7 +621,7 @@ main {
 		grid-column: 2;
 	}
 
-	.point-description-field {
+	.point-meta-field {
 		grid-column: 2;
 	}
 }

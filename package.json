@@ -1,6 +1,6 @@
 {
   "name": "iobroker.bacnet-client",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
   "author": {
     "name": "EnergieFuchs",

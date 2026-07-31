@@ -26,6 +26,7 @@ declare global {
 				description: string;
 				selectedPoints: string[];
 				pointDescriptions: Record<string, string>;
+				pointUnits: Record<string, string>;
 			}>;
 		}
 	}

@@ -187,8 +187,19 @@
 
 		function tr(key) {
 			const entry = window.systemDictionary && window.systemDictionary[key];
-			const language = window.systemLang || "en";
-			return entry && (entry[language] || entry.en) || key;
+			return entry && entry.de || key;
+		}
+
+		function bacnetLabel(value) {
+			const key = String(value || "").toLowerCase();
+			const labels = {
+				analog_input: "Analogeingang", analog_output: "Analogausgang", analog_value: "Analogwert",
+				binary_input: "Binäreingang", binary_output: "Binärausgang", binary_value: "Binärwert",
+				multi_state_input: "Mehrzustandseingang", multi_state_output: "Mehrzustandsausgang",
+				multi_state_value: "Mehrzustandswert", present_value: "Aktueller Wert",
+				object_name: "Objektname", description: "Beschreibung", units: "Einheit"
+			};
+			return labels[key] || value;
 		}
 
 		function escapeHtml(value) {
@@ -219,6 +230,9 @@
 					selectedPoints: [...new Set(Array.isArray(item.selectedPoints) ? item.selectedPoints : [])].sort(),
 					pointDescriptions: item.pointDescriptions && typeof item.pointDescriptions === "object"
 						? { ...item.pointDescriptions }
+						: {},
+					pointUnits: item.pointUnits && typeof item.pointUnits === "object"
+						? { ...item.pointUnits }
 						: {}
 				}))
 				.sort((a, b) => a.deviceInstance - b.deviceInstance);
@@ -227,7 +241,7 @@
 		function ensureSelection(deviceInstance) {
 			let selection = settings.deviceSelections.find(item => item.deviceInstance === deviceInstance);
 			if (!selection) {
-				selection = { deviceInstance, description: "", selectedPoints: [], pointDescriptions: {} };
+				selection = { deviceInstance, description: "", selectedPoints: [], pointDescriptions: {}, pointUnits: {} };
 				settings.deviceSelections.push(selection);
 				settings.deviceSelections.sort((a, b) => a.deviceInstance - b.deviceInstance);
 			}
@@ -297,16 +311,26 @@
 							${selected.has(point.id) ? "checked" : ""}>
 						<span class="point-main">
 							<strong>${escapeHtml(point.objectName)}</strong>
-							<span>${escapeHtml(point.objectTypeName)} ${point.objectInstance} · ${escapeHtml(point.propertyName)}</span>
+							<span>${escapeHtml(bacnetLabel(point.objectTypeName))} ${point.objectInstance} · ${escapeHtml(bacnetLabel(point.propertyName))}</span>
 						</span>
 						<code>${escapeHtml(point.id)}</code>
-						<label class="point-description-field">
+						<label class="point-meta-field point-description-field">
 							<span>${tr("pointDescription")}</span>
 							<input class="point-description" type="text" maxlength="240"
+								autocomplete="off" spellcheck="true"
 								data-device="${device.deviceInstance}"
 								data-point="${escapeHtml(point.id)}"
 								value="${escapeHtml(selection.pointDescriptions[point.id] || point.userDescription || "")}"
 								placeholder="${escapeHtml(point.objectName)}">
+						</label>
+						<label class="point-meta-field point-unit-field">
+							<span>${tr("pointUnit")}</span>
+							<input class="point-unit" type="text" maxlength="32"
+								autocomplete="off" spellcheck="false"
+								data-device="${device.deviceInstance}"
+								data-point="${escapeHtml(point.id)}"
+								value="${escapeHtml(selection.pointUnits[point.id] || point.userUnit || "")}"
+								placeholder="${escapeHtml(tr("unitPlaceholder"))}">
 						</label>
 					</div>
 				`).join("");
@@ -520,6 +544,14 @@
 					selection.pointDescriptions[event.target.dataset.point] = event.target.value;
 					notifyChanged();
 				}
+				if (event.target.classList.contains("point-unit")) {
+					const selection = ensureSelection(Number(event.target.dataset.device));
+					selection.pointUnits[event.target.dataset.point] = event.target.value;
+					notifyChanged();
+				}
+			});
+			document.getElementById("device-list").addEventListener("click", event => {
+				if (event.target.matches(".point-description, .point-unit")) event.stopPropagation();
 			});
 			for (const id of [...textFields, ...checkboxFields, "additionalTargets", "writeAllowlist"]) {
 				document.getElementById(id).addEventListener("input", notifyChanged);

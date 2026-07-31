@@ -428,6 +428,7 @@ class BacnetClientAdapter extends utils.Adapter {
         const existingObject = ensureObject ? await this.getObjectAsync(id) : null;
         const existingCommon = existingObject?.type === "state" ? existingObject.common : undefined;
         const configuredDescription = (0, selection_1.selectionForDevice)(this.config.deviceSelections, device.deviceInstance)?.pointDescriptions[id]?.trim();
+        const configuredUnit = (0, selection_1.selectionForDevice)(this.config.deviceSelections, device.deviceInstance)?.pointUnits[id]?.trim();
         const common = {
             name: configuredDescription || existingCommon?.name || (0, ids_1.propertySegment)(propertyId),
             type: mapped.commonType,
@@ -441,8 +442,8 @@ class BacnetClientAdapter extends utils.Adapter {
         else if (existingCommon?.desc) {
             common.desc = existingCommon.desc;
         }
-        if (existingCommon?.unit !== undefined || mapped.unit) {
-            common.unit = existingCommon?.unit ?? mapped.unit;
+        if (configuredUnit || existingCommon?.unit !== undefined || mapped.unit) {
+            common.unit = configuredUnit || existingCommon?.unit || mapped.unit;
         }
         if (existingCommon?.states || mapped.states) {
             common.states = existingCommon?.states ?? mapped.states;
@@ -655,6 +656,7 @@ class BacnetClientAdapter extends utils.Adapter {
                             propertyName: (0, ids_1.propertySegment)(propertyId),
                             selected: selectedPoints.has(id),
                             userDescription: selection?.pointDescriptions[id] ?? "",
+                            userUnit: selection?.pointUnits[id] ?? "",
                         };
                     });
                 })

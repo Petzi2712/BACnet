@@ -37,11 +37,20 @@ function normalizeDeviceSelections(value) {
                 }
             }
         }
+        const pointUnits = {};
+        if (candidate.pointUnits && typeof candidate.pointUnits === "object") {
+            for (const [point, unit] of Object.entries(candidate.pointUnits)) {
+                if (selectedPoints.includes(point) && typeof unit === "string" && unit.trim()) {
+                    pointUnits[point] = unit.trim();
+                }
+            }
+        }
         result.set(candidate.deviceInstance, {
             deviceInstance: candidate.deviceInstance,
             description: typeof candidate.description === "string" ? candidate.description.trim() : "",
             selectedPoints,
             pointDescriptions,
+            pointUnits,
         });
     }
     return [...result.values()].sort((a, b) => a.deviceInstance - b.deviceInstance);

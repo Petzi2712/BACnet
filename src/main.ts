@@ -495,6 +495,9 @@ class BacnetClientAdapter extends utils.Adapter {
 			this.config.deviceSelections,
 			device.deviceInstance,
 		)?.pointDescriptions[id]?.trim();
+		const configuredUnit = selectionForDevice(this.config.deviceSelections, device.deviceInstance)?.pointUnits[
+			id
+		]?.trim();
 		const common: ioBroker.StateCommon = {
 			name: configuredDescription || existingCommon?.name || propertySegment(propertyId),
 			type: mapped.commonType,
@@ -507,8 +510,8 @@ class BacnetClientAdapter extends utils.Adapter {
 		} else if (existingCommon?.desc) {
 			common.desc = existingCommon.desc;
 		}
-		if (existingCommon?.unit !== undefined || mapped.unit) {
-			common.unit = existingCommon?.unit ?? mapped.unit;
+		if (configuredUnit || existingCommon?.unit !== undefined || mapped.unit) {
+			common.unit = configuredUnit || existingCommon?.unit || mapped.unit;
 		}
 		if (existingCommon?.states || mapped.states) {
 			common.states = existingCommon?.states ?? mapped.states;
@@ -767,6 +770,7 @@ class BacnetClientAdapter extends utils.Adapter {
 										propertyName: propertySegment(propertyId),
 										selected: selectedPoints.has(id),
 										userDescription: selection?.pointDescriptions[id] ?? "",
+										userUnit: selection?.pointUnits[id] ?? "",
 									};
 								});
 							})
