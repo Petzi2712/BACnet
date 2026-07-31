@@ -163,6 +163,7 @@ export interface DeviceCatalogPoint {
 	propertyName: string;
 	selected: boolean;
 	userDescription: string;
+	userUnit: string;
 }
 
 export interface DeviceCatalogEntry {
