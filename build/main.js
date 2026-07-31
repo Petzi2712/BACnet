@@ -33,6 +33,7 @@ var import_mapper = require("./lib/mapper");
 var import_persistence = require("./lib/persistence");
 var import_queue = require("./lib/queue");
 var import_scheduler = require("./lib/scheduler");
+var import_selection = require("./lib/selection");
 var import_write = require("./lib/write");
 class BacnetClientAdapter extends utils.Adapter {
   port;
@@ -100,7 +101,8 @@ class BacnetClientAdapter extends utils.Adapter {
         this.port,
         this.timer,
         (target, notification) => {
-          const device = this.discovered.get(target.deviceInstance);
+          var _a2, _b2;
+          const device = (_b2 = this.discovered.get(target.deviceInstance)) != null ? _b2 : (_a2 = this.inventories.get(target.deviceInstance)) == null ? void 0 : _a2.device;
           if (!device) {
             return;
           }
@@ -121,12 +123,20 @@ class BacnetClientAdapter extends utils.Adapter {
         }
       );
       this.store = new import_persistence.InventoryStore((0, import_node_path.join)(utils.getAbsoluteInstanceDataDir(this), "inventory-v1.json"));
-      await this.store.load();
+      this.restoreInventories(await this.store.load());
       await ((_b = (_a = this.port).waitUntilListening) == null ? void 0 : _b.call(_a, clampInteger(this.config.apduTimeoutMs, 1e3, 6e4, 3e3)));
+      await this.pruneUnselectedObjectTree();
       await Promise.all([
         this.setStateAsync("info.connection", true, true),
-        this.setStateAsync("info.socketReady", true, true)
+        this.setStateAsync("info.socketReady", true, true),
+        this.setStateAsync("info.importedDevices", this.inventories.size, true),
+        this.setStateAsync(
+          "info.importedObjects",
+          [...this.inventories.values()].reduce((total, inventory) => total + inventory.objects.length, 0),
+          true
+        )
       ]);
+      void this.reconcileRestoredInventories().catch((error) => this.recordError("restore selections", error));
       if (this.config.pollingEnabled) {
         this.scheduler = new import_scheduler.NonOverlappingScheduler(
           () => this.pollImportedPoints(),
@@ -167,6 +177,9 @@ class BacnetClientAdapter extends utils.Adapter {
         return;
       case "listDevices":
         this.respond(message, { ok: true, devices: [...this.discovered.values()] });
+        return;
+      case "getDeviceCatalog":
+        this.respond(message, { ok: true, devices: this.getDeviceCatalog() });
         return;
       case "importDevices": {
         const instances = parseDeviceInstances(message.message);
@@ -303,7 +316,7 @@ class BacnetClientAdapter extends utils.Adapter {
         try {
           const inventory = await this.inventoryReader.importDevice(device);
           this.inventories.set(instance, inventory);
-          await this.reconcileInventory(inventory);
+          await this.reconcileInventory(inventory, false);
         } catch (error) {
           active.progress.errors.push(`Device ${instance}: ${errorText(error)}`);
         } finally {
@@ -311,6 +324,7 @@ class BacnetClientAdapter extends utils.Adapter {
         }
       });
       active.progress.status = active.cancelled ? "cancelled" : "completed";
+      await this.pruneUnselectedObjectTree();
       await this.persistInventories();
       await Promise.all([
         this.setStateAsync("info.importedDevices", this.inventories.size, true),
@@ -328,12 +342,36 @@ class BacnetClientAdapter extends utils.Adapter {
       active.progress.finishedAt = Date.now();
     }
   }
-  async reconcileInventory(inventory) {
-    var _a, _b;
+  async reconcileInventory(inventory, refreshMissingValues) {
+    var _a, _b, _c, _d;
+    const selectedPoints = this.selectedPointIds();
+    const selectedObjects = inventory.objects.map((object) => ({
+      object,
+      properties: [...object.properties.entries()].filter(
+        ([propertyId]) => selectedPoints.has(
+          (0, import_ids.pointId)(
+            inventory.device.deviceInstance,
+            object.objectId.type,
+            object.objectId.instance,
+            propertyId
+          )
+        )
+      )
+    })).filter((entry) => entry.properties.length > 0);
+    if (selectedObjects.length === 0) {
+      return;
+    }
     const deviceBase = `devices.${(0, import_ids.deviceSegment)(inventory.device.deviceInstance)}`;
+    const configuredDescription = (_a = (0, import_selection.selectionForDevice)(
+      this.config.deviceSelections,
+      inventory.device.deviceInstance
+    )) == null ? void 0 : _a.description;
     await this.extendObjectAsync(deviceBase, {
       type: "device",
-      common: { name: inventory.device.objectName || `BACnet device ${inventory.device.deviceInstance}` },
+      common: {
+        name: inventory.device.objectName || `BACnet device ${inventory.device.deviceInstance}`,
+        desc: configuredDescription != null ? configuredDescription : ""
+      },
       native: {
         deviceInstance: inventory.device.deviceInstance,
         address: inventory.device.address,
@@ -353,7 +391,7 @@ class BacnetClientAdapter extends utils.Adapter {
       common: { name: "BACnet object types" },
       native: {}
     });
-    for (const object of inventory.objects) {
+    for (const { object, properties } of selectedObjects) {
       const typeBase = `${deviceBase}.types.${(0, import_ids.objectTypeSegment)(object.objectId.type)}`;
       const objectBase = `${typeBase}.${(0, import_ids.objectSegment)(object.objectId.instance)}`;
       await this.extendObjectAsync(typeBase, {
@@ -364,7 +402,7 @@ class BacnetClientAdapter extends utils.Adapter {
       await this.extendObjectAsync(objectBase, {
         type: "channel",
         common: {
-          name: (_a = readString(object.properties.get(import_client.PropertyIdentifier.OBJECT_NAME))) != null ? _a : (0, import_ids.objectSegment)(object.objectId.instance)
+          name: (_c = (_b = readString(object.properties.get(import_client.PropertyIdentifier.OBJECT_NAME))) != null ? _b : object.objectName) != null ? _c : (0, import_ids.objectSegment)(object.objectId.instance)
         },
         native: {
           deviceInstance: inventory.device.deviceInstance,
@@ -373,11 +411,34 @@ class BacnetClientAdapter extends utils.Adapter {
           partial: object.partial
         }
       });
-      for (const [propertyId, values] of object.properties) {
-        await this.upsertProperty(inventory.device, object.objectId, propertyId, values);
+      for (const [propertyId, cachedValues] of properties) {
+        let values = cachedValues;
+        if (refreshMissingValues && values.length === 0) {
+          try {
+            values = await this.inventoryReader.readValue(
+              inventory.device.address,
+              object.objectId,
+              propertyId
+            );
+            object.properties.set(propertyId, values);
+          } catch (error) {
+            this.log.debug(
+              `Initial read failed for selected point ${(0, import_ids.pointId)(
+                inventory.device.deviceInstance,
+                object.objectId.type,
+                object.objectId.instance,
+                propertyId
+              )}: ${errorText(error)}`
+            );
+            continue;
+          }
+        }
+        if (values.length > 0) {
+          await this.upsertProperty(inventory.device, object.objectId, propertyId, values);
+        }
       }
-      if (this.config.covEnabled && object.properties.has(import_client.PropertyIdentifier.PRESENT_VALUE) && isCovCandidate(object.objectId.type)) {
-        await ((_b = this.cov) == null ? void 0 : _b.start(
+      if (this.config.covEnabled && properties.some(([propertyId]) => propertyId === import_client.PropertyIdentifier.PRESENT_VALUE) && isCovCandidate(object.objectId.type)) {
+        await ((_d = this.cov) == null ? void 0 : _d.start(
           {
             subscriberId: subscriberId(inventory.device.deviceInstance, object.objectId),
             deviceInstance: inventory.device.deviceInstance,
@@ -392,6 +453,9 @@ class BacnetClientAdapter extends utils.Adapter {
   async upsertProperty(device, objectId, propertyId, values, ensureObject = true) {
     var _a;
     const id = (0, import_ids.pointId)(device.deviceInstance, objectId.type, objectId.instance, propertyId);
+    if (!this.selectedPointIds().has(id)) {
+      return;
+    }
     const mapped = (0, import_mapper.mapApplicationData)(values, objectId.type, propertyId);
     const writable = this.config.writeEnabled && ((_a = this.config.writeAllowlist) != null ? _a : []).includes(id) && propertyId === import_client.PropertyIdentifier.PRESENT_VALUE && isSupportedWritableType(objectId.type);
     const common = {
@@ -443,9 +507,17 @@ class BacnetClientAdapter extends utils.Adapter {
     }
     const queue = new import_queue.BoundedQueue(clampInteger(this.config.requestConcurrency, 1, 32, 4));
     const tasks = [];
+    const selectedPoints = this.selectedPointIds();
     for (const inventory of this.inventories.values()) {
       for (const object of inventory.objects) {
-        if (object.properties.has(import_client.PropertyIdentifier.PRESENT_VALUE)) {
+        if (object.properties.has(import_client.PropertyIdentifier.PRESENT_VALUE) && selectedPoints.has(
+          (0, import_ids.pointId)(
+            inventory.device.deviceInstance,
+            object.objectId.type,
+            object.objectId.instance,
+            import_client.PropertyIdentifier.PRESENT_VALUE
+          )
+        )) {
           tasks.push({
             device: inventory.device,
             objectId: object.objectId,
@@ -509,6 +581,152 @@ class BacnetClientAdapter extends utils.Adapter {
       throw error;
     }
   }
+  selectedPointIds() {
+    return (0, import_selection.selectedPointSet)(this.config.deviceSelections);
+  }
+  restoreInventories(file) {
+    var _a, _b, _c;
+    this.inventories.clear();
+    for (const persisted of file.devices) {
+      if (!Number.isInteger(persisted.deviceInstance) || persisted.deviceInstance < 0 || !persisted.address || typeof persisted.address !== "object" || !Array.isArray(persisted.objects)) {
+        continue;
+      }
+      const device = {
+        deviceInstance: persisted.deviceInstance,
+        address: persisted.address,
+        addressKey: (0, import_ids.addressKey)(persisted.address),
+        maxApdu: (_a = persisted.maxApdu) != null ? _a : 1476,
+        segmentation: (_b = persisted.segmentation) != null ? _b : 0,
+        vendorId: (_c = persisted.vendorId) != null ? _c : 0,
+        lastSeen: persisted.lastSeen,
+        conflict: false,
+        conflictingAddresses: [],
+        objectName: persisted.objectName,
+        vendorName: persisted.vendorName,
+        modelName: persisted.modelName,
+        firmwareRevision: persisted.firmwareRevision,
+        applicationSoftwareVersion: persisted.applicationSoftwareVersion,
+        location: persisted.location,
+        description: persisted.description
+      };
+      this.inventories.set(persisted.deviceInstance, {
+        schemaVersion: 1,
+        device,
+        objects: persisted.objects.filter(
+          (object) => Number.isInteger(object.objectType) && object.objectType >= 0 && Number.isInteger(object.objectInstance) && object.objectInstance >= 0 && Array.isArray(object.propertyIds)
+        ).map((object) => ({
+          objectId: { type: object.objectType, instance: object.objectInstance },
+          properties: new Map(
+            object.propertyIds.filter((propertyId) => Number.isInteger(propertyId) && propertyId >= 0).map((propertyId) => [propertyId, []])
+          ),
+          propertySource: object.partial ? "fallback" : "property-list",
+          partial: object.partial,
+          objectName: object.objectName
+        })),
+        importedAt: file.updatedAt,
+        completeness: persisted.objects.some((object) => object.partial) ? "partial" : "complete",
+        errors: []
+      });
+    }
+  }
+  async reconcileRestoredInventories() {
+    if (!this.inventoryReader || this.inventories.size === 0) {
+      return;
+    }
+    const queue = new import_queue.BoundedQueue(clampInteger(this.config.requestConcurrency, 1, 32, 4));
+    await queue.map(
+      [...this.inventories.values()],
+      (inventory) => this.reconcileInventory(inventory, true).catch((error) => {
+        this.log.warn(
+          `Could not restore selected points for device ${inventory.device.deviceInstance}: ${errorText(error)}`
+        );
+      })
+    );
+  }
+  getDeviceCatalog() {
+    const selectedPoints = this.selectedPointIds();
+    const instances = /* @__PURE__ */ new Set([...this.discovered.keys(), ...this.inventories.keys()]);
+    return [...instances].sort((a, b) => a - b).map((deviceInstance) => {
+      var _a, _b, _c, _d, _e, _f, _g;
+      const liveDevice = this.discovered.get(deviceInstance);
+      const inventory = this.inventories.get(deviceInstance);
+      const device = liveDevice != null ? liveDevice : inventory == null ? void 0 : inventory.device;
+      if (!device) {
+        return void 0;
+      }
+      const selection = (0, import_selection.selectionForDevice)(this.config.deviceSelections, deviceInstance);
+      return {
+        deviceInstance,
+        active: Boolean(liveDevice && !liveDevice.conflict),
+        imported: Boolean(inventory),
+        conflict: device.conflict,
+        address: device.address,
+        lastSeen: device.lastSeen,
+        objectName: (_a = device.objectName) != null ? _a : `BACnet device ${deviceInstance}`,
+        vendorName: (_b = device.vendorName) != null ? _b : "",
+        modelName: (_c = device.modelName) != null ? _c : "",
+        location: (_d = device.location) != null ? _d : "",
+        deviceDescription: (_e = device.description) != null ? _e : "",
+        userDescription: (_f = selection == null ? void 0 : selection.description) != null ? _f : "",
+        points: (_g = inventory == null ? void 0 : inventory.objects.flatMap((object) => {
+          var _a2, _b2;
+          const objectName = (_b2 = (_a2 = readString(object.properties.get(import_client.PropertyIdentifier.OBJECT_NAME))) != null ? _a2 : object.objectName) != null ? _b2 : (0, import_ids.objectSegment)(object.objectId.instance);
+          return [...object.properties.keys()].map((propertyId) => {
+            const id = (0, import_ids.pointId)(
+              deviceInstance,
+              object.objectId.type,
+              object.objectId.instance,
+              propertyId
+            );
+            return {
+              id,
+              deviceInstance,
+              objectType: object.objectId.type,
+              objectTypeName: (0, import_ids.objectTypeSegment)(object.objectId.type),
+              objectInstance: object.objectId.instance,
+              objectName,
+              propertyId,
+              propertyName: (0, import_ids.propertySegment)(propertyId),
+              selected: selectedPoints.has(id)
+            };
+          });
+        }).sort((a, b) => a.id.localeCompare(b.id))) != null ? _g : []
+      };
+    }).filter((device) => Boolean(device));
+  }
+  async pruneUnselectedObjectTree() {
+    const selectedPoints = this.selectedPointIds();
+    const selectedObjects = (0, import_selection.selectedObjectSet)(selectedPoints);
+    const startkey = `${this.namespace}.devices.`;
+    const endkey = `${this.namespace}.devices.\u9999`;
+    const params = { startkey, endkey, include_docs: true };
+    const [states, channels, devices] = await Promise.all([
+      this.getObjectViewAsync("system", "state", params),
+      this.getObjectViewAsync("system", "channel", params),
+      this.getObjectViewAsync("system", "device", params)
+    ]);
+    const entries = [
+      ...states.rows.map((row) => ({ id: row.id, state: true })),
+      ...channels.rows.map((row) => ({ id: row.id, state: false })),
+      ...devices.rows.map((row) => ({ id: row.id, state: false }))
+    ].sort((a, b) => b.id.length - a.id.length);
+    for (const entry of entries) {
+      const relativeId = entry.id.startsWith(`${this.namespace}.`) ? entry.id.slice(this.namespace.length + 1) : entry.id;
+      if (selectedObjects.has(relativeId)) {
+        continue;
+      }
+      if (entry.state) {
+        await this.delStateAsync(relativeId).catch(() => void 0);
+      }
+      await this.delObjectAsync(relativeId).catch(() => void 0);
+    }
+    for (const inventory of this.inventories.values()) {
+      const typesFolder = `devices.${(0, import_ids.deviceSegment)(inventory.device.deviceInstance)}.types`;
+      if (!selectedObjects.has(typesFolder)) {
+        await this.delObjectAsync(typesFolder).catch(() => void 0);
+      }
+    }
+  }
   async persistInventories() {
     if (!this.store) {
       return;
@@ -521,12 +739,26 @@ class BacnetClientAdapter extends utils.Adapter {
         address: inventory.device.address,
         lastSeen: inventory.device.lastSeen,
         staleScans: 0,
-        objects: inventory.objects.map((object) => ({
-          objectType: object.objectId.type,
-          objectInstance: object.objectId.instance,
-          propertyIds: [...object.properties.keys()],
-          partial: object.partial
-        }))
+        maxApdu: inventory.device.maxApdu,
+        segmentation: inventory.device.segmentation,
+        vendorId: inventory.device.vendorId,
+        objectName: inventory.device.objectName,
+        vendorName: inventory.device.vendorName,
+        modelName: inventory.device.modelName,
+        firmwareRevision: inventory.device.firmwareRevision,
+        applicationSoftwareVersion: inventory.device.applicationSoftwareVersion,
+        location: inventory.device.location,
+        description: inventory.device.description,
+        objects: inventory.objects.map((object) => {
+          var _a;
+          return {
+            objectType: object.objectId.type,
+            objectInstance: object.objectId.instance,
+            propertyIds: [...object.properties.keys()],
+            partial: object.partial,
+            objectName: (_a = readString(object.properties.get(import_client.PropertyIdentifier.OBJECT_NAME))) != null ? _a : object.objectName
+          };
+        })
       }))
     });
   }

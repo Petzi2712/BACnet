@@ -1,7 +1,7 @@
 {
   "name": "iobroker.bacnet-client",
-  "version": "0.1.0",
-  "description": "Discovers, inventories, polls and safely controls BACnet/IP devices",
+  "version": "0.2.0",
+  "description": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
   "author": {
     "name": "EnergieFuchs",
     "email": "t.tetzke.mobil@googlemail.com"

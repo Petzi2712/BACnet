@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "bacnet-client",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "de": "Auswählbare Gerätedatenpunkte, Live-Gerätestatus, Volltextsuche, Beschreibungen und ein sauberer Objektbaum",
+        "ru": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "pt": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "nl": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "fr": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "it": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "es": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "pl": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "uk": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree",
+        "zh-cn": "Selectable device data points, live device status, full-text search, descriptions and a clean object tree"
+      },
       "0.1.0": {
         "en": "Initial BACnet/IP discovery, inventory, polling and safe-write MVP",
         "de": "Erster BACnet/IP-MVP für Discovery, Inventar, Polling und sicheres Schreiben",
@@ -31,17 +44,17 @@
       "zh-cn": "BACnet Client"
     },
     "desc": {
-      "en": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "de": "Erkennt und inventarisiert BACnet/IP-Geräte, fragt Werte ab und steuert sie sicher",
-      "ru": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "pt": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "nl": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "fr": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "it": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "es": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "pl": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "uk": "Discovers, inventories, polls and safely controls BACnet/IP devices",
-      "zh-cn": "Discovers, inventories, polls and safely controls BACnet/IP devices"
+      "en": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "de": "Erkennt BACnet/IP-Geräte und legt nur ausgewählte Datenpunkte in ioBroker an",
+      "ru": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "pt": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "nl": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "fr": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "it": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "es": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "pl": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "uk": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker",
+      "zh-cn": "Discovers BACnet/IP devices and exposes only selected data points in ioBroker"
     },
     "authors": [
       "EnergieFuchs <t.tetzke.mobil@googlemail.com>"
@@ -70,7 +83,7 @@
     "dataSource": "poll",
     "messagebox": true,
     "adminUI": {
-      "config": "json"
+      "config": "materialize"
     },
     "dependencies": [
       {
@@ -103,7 +116,8 @@
     "writePriority": 16,
     "writeAllowlist": [],
     "staleScansBeforeDelete": 3,
-    "autoImportAll": false
+    "autoImportAll": false,
+    "deviceSelections": []
   },
   "objects": [],
   "instanceObjects": [
