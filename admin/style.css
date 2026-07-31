@@ -449,12 +449,34 @@ main {
 
 .point-row {
 	display: grid;
-	grid-template-columns: auto minmax(190px, 0.8fr) minmax(280px, 1.4fr);
+	grid-template-columns: auto minmax(190px, 0.8fr) minmax(220px, 1fr) minmax(220px, 1fr);
 	align-items: center;
 	gap: 12px;
 	padding: 10px 12px;
 	background: #fff;
 	cursor: pointer;
+}
+
+.point-description-field span {
+	display: block;
+	margin-bottom: 3px;
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.point-description-field input {
+	width: 100%;
+	min-height: 38px;
+	padding: 7px 10px;
+	border: 1px solid #aabac4;
+	border-radius: 7px;
+	background: #fff;
+}
+
+.point-description-field input:focus {
+	border-color: var(--bac-blue);
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(7, 143, 202, 0.13);
 }
 
 .point-row:hover {
@@ -584,6 +606,10 @@ main {
 	}
 
 	.point-row code {
+		grid-column: 2;
+	}
+
+	.point-description-field {
 		grid-column: 2;
 	}
 }

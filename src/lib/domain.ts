@@ -162,6 +162,7 @@ export interface DeviceCatalogPoint {
 	propertyId: number;
 	propertyName: string;
 	selected: boolean;
+	userDescription: string;
 }
 
 export interface DeviceCatalogEntry {

@@ -25,6 +25,7 @@ declare global {
 				deviceInstance: number;
 				description: string;
 				selectedPoints: string[];
+				pointDescriptions: Record<string, string>;
 			}>;
 		}
 	}

@@ -34,6 +34,7 @@ window.systemDictionary = {
 		en: "e.g. ventilation unit, building A, roof",
 		de: "z. B. Lüftungsanlage, Gebäude A, Dach"
 	},
+	pointDescription: { en: "Description / object name", de: "Beschreibung / Objektname" },
 	rereadDevice: { en: "Re-read device", de: "Gerät neu einlesen" },
 	readDevice: { en: "Read device", de: "Gerät einlesen" },
 	selectVisible: { en: "Select visible", de: "Sichtbare auswählen" },

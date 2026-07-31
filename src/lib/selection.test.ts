@@ -10,10 +10,21 @@ describe("device point selections", () => {
 				deviceInstance: 1234,
 				description: "  AHU  ",
 				selectedPoints: [point, point, "devices.d_4321.types.analog_input.o_7.present_value", "invalid"],
+				pointDescriptions: {
+					[point]: "  Zulufttemperatur  ",
+					"devices.d_1234.types.analog_input.o_8.present_value": "Nicht ausgewählt",
+				},
 			},
 			{ deviceInstance: -1, description: "invalid", selectedPoints: [] },
 		]);
-		expect(normalized).to.deep.equal([{ deviceInstance: 1234, description: "AHU", selectedPoints: [point] }]);
+		expect(normalized).to.deep.equal([
+			{
+				deviceInstance: 1234,
+				description: "AHU",
+				selectedPoints: [point],
+				pointDescriptions: { [point]: "Zulufttemperatur" },
+			},
+		]);
 		expect([...selectedPointSet(normalized)]).to.deep.equal([point]);
 		expect(selectionForDevice(normalized, 1234)?.description).to.equal("AHU");
 	});

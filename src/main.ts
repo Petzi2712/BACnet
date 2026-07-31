@@ -73,7 +73,7 @@ class BacnetClientAdapter extends utils.Adapter {
 		]);
 		await this.setObjectNotExistsAsync("devices", {
 			type: "folder",
-			common: { name: "BACnet devices" },
+			common: { name: "BACnet-Geräte" },
 			native: {},
 		});
 		this.subscribeStates("devices.*");
@@ -396,12 +396,12 @@ class BacnetClientAdapter extends utils.Adapter {
 		});
 		await this.extendObjectAsync(`${deviceBase}.info`, {
 			type: "channel",
-			common: { name: "Device information" },
+			common: { name: "Geräteinformationen" },
 			native: {},
 		});
 		await this.extendObjectAsync(`${deviceBase}.types`, {
 			type: "folder",
-			common: { name: "BACnet object types" },
+			common: { name: "BACnet-Objekttypen" },
 			native: {},
 		});
 
@@ -489,18 +489,34 @@ class BacnetClientAdapter extends utils.Adapter {
 			(this.config.writeAllowlist ?? []).includes(id) &&
 			propertyId === PropertyIdentifier.PRESENT_VALUE &&
 			isSupportedWritableType(objectId.type);
+		const existingObject = ensureObject ? await this.getObjectAsync(id) : null;
+		const existingCommon = existingObject?.type === "state" ? existingObject.common : undefined;
+		const configuredDescription = selectionForDevice(
+			this.config.deviceSelections,
+			device.deviceInstance,
+		)?.pointDescriptions[id]?.trim();
 		const common: ioBroker.StateCommon = {
-			name: propertySegment(propertyId),
+			name: configuredDescription || existingCommon?.name || propertySegment(propertyId),
 			type: mapped.commonType,
-			role: mapped.role,
+			role: existingCommon?.role || mapped.role,
 			read: true,
 			write: writable,
 		};
-		if (mapped.unit) {
-			common.unit = mapped.unit;
+		if (configuredDescription) {
+			common.desc = configuredDescription;
+		} else if (existingCommon?.desc) {
+			common.desc = existingCommon.desc;
 		}
-		if (mapped.states) {
-			common.states = mapped.states;
+		if (existingCommon?.unit !== undefined || mapped.unit) {
+			common.unit = existingCommon?.unit ?? mapped.unit;
+		}
+		if (existingCommon?.states || mapped.states) {
+			common.states = existingCommon?.states ?? mapped.states;
+		}
+		for (const property of ["min", "max", "step", "def"] as const) {
+			if (existingCommon?.[property] !== undefined) {
+				(common as unknown as Record<string, unknown>)[property] = existingCommon[property];
+			}
 		}
 		if (ensureObject) {
 			await this.extendObjectAsync(id, {
@@ -750,6 +766,7 @@ class BacnetClientAdapter extends utils.Adapter {
 										propertyId,
 										propertyName: propertySegment(propertyId),
 										selected: selectedPoints.has(id),
+										userDescription: selection?.pointDescriptions[id] ?? "",
 									};
 								});
 							})
