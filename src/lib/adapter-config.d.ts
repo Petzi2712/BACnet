@@ -21,6 +21,11 @@ declare global {
 			writeAllowlist: string[];
 			staleScansBeforeDelete: number;
 			autoImportAll: boolean;
+			deviceSelections: Array<{
+				deviceInstance: number;
+				description: string;
+				selectedPoints: string[];
+			}>;
 		}
 	}
 }

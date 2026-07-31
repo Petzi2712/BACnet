@@ -97,6 +97,7 @@ export interface BacnetObject {
 	properties: Map<number, ApplicationData[]>;
 	propertySource: "property-list" | "fallback";
 	partial: boolean;
+	objectName?: string;
 }
 
 export interface DeviceInventory {
@@ -113,6 +114,7 @@ export interface PersistedObject {
 	objectInstance: number;
 	propertyIds: number[];
 	partial: boolean;
+	objectName?: string;
 }
 
 export interface PersistedDevice {
@@ -121,6 +123,16 @@ export interface PersistedDevice {
 	lastSeen: number;
 	staleScans: number;
 	objects: PersistedObject[];
+	maxApdu?: number;
+	segmentation?: number;
+	vendorId?: number;
+	objectName?: string;
+	vendorName?: string;
+	modelName?: string;
+	firmwareRevision?: string;
+	applicationSoftwareVersion?: string;
+	location?: string;
+	description?: string;
 }
 
 export interface InventoryFile {
@@ -138,4 +150,32 @@ export interface JobProgress {
 	processed: number;
 	total?: number;
 	errors: string[];
+}
+
+export interface DeviceCatalogPoint {
+	id: string;
+	deviceInstance: number;
+	objectType: number;
+	objectTypeName: string;
+	objectInstance: number;
+	objectName: string;
+	propertyId: number;
+	propertyName: string;
+	selected: boolean;
+}
+
+export interface DeviceCatalogEntry {
+	deviceInstance: number;
+	active: boolean;
+	imported: boolean;
+	conflict: boolean;
+	address: BACNetAddress;
+	lastSeen: number;
+	objectName: string;
+	vendorName: string;
+	modelName: string;
+	location: string;
+	deviceDescription: string;
+	userDescription: string;
+	points: DeviceCatalogPoint[];
 }

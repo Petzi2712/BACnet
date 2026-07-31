@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="../../css/adapter.css">
+	<script src="../../lib/js/jquery-3.2.1.min.js"></script>
+	<script src="../../socket.io/socket.io.js"></script>
+	<script src="../../js/translate.js"></script>
+	<script src="../../js/adapter-settings.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="words.js"></script>
+	<title>BACnet Client</title>
+</head>
+<body>
+	<div class="adapter-container">
+		<header class="app-header">
+			<img src="bacnet-client.png" class="logo" alt="BACnet Client">
+			<div>
+				<p class="eyebrow">ioBroker Adapter</p>
+				<h1>BACnet Client</h1>
+				<p class="subtitle" data-i18n="subtitle"></p>
+			</div>
+		</header>
+
+		<nav class="tab-bar" aria-label="Configuration sections">
+			<button type="button" class="tab-button active" data-tab="devices" data-i18n="devicesAndPoints"></button>
+			<button type="button" class="tab-button" data-tab="network" data-i18n="network"></button>
+			<button type="button" class="tab-button" data-tab="polling" data-i18n="pollingAndWriting"></button>
+			<button type="button" class="tab-button" data-tab="diagnostics" data-i18n="diagnostics"></button>
+		</nav>
+
+		<main>
+			<section class="tab-panel active" id="tab-devices">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow" data-i18n="inventory"></p>
+						<h2 data-i18n="availableDevices"></h2>
+						<p class="section-help" data-i18n="deviceSelectionHelp"></p>
+					</div>
+					<div class="status-legend">
+						<span><i class="status-dot active"></i><span data-i18n="active"></span></span>
+						<span><i class="status-dot inactive"></i><span data-i18n="inactive"></span></span>
+					</div>
+				</div>
+
+				<div class="action-toolbar">
+					<button type="button" class="primary-action" id="discover-button">
+						<span aria-hidden="true">⌁</span><span data-i18n="startDiscovery"></span>
+					</button>
+					<button type="button" class="secondary-action" id="cancel-discovery-button" data-i18n="cancelDiscovery"></button>
+					<button type="button" class="secondary-action" id="refresh-button" data-i18n="refreshList"></button>
+					<button type="button" class="secondary-action" id="import-all-button" data-i18n="readAllDevices"></button>
+				</div>
+
+				<div class="search-row">
+					<label for="catalog-search" data-i18n="fullTextSearch"></label>
+					<div class="search-control">
+						<span aria-hidden="true">⌕</span>
+						<input id="catalog-search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
+						<button type="button" id="clear-search" aria-label="Clear search">×</button>
+					</div>
+				</div>
+
+				<div id="operation-status" class="operation-status" role="status" aria-live="polite"></div>
+				<div id="device-summary" class="device-summary"></div>
+				<div id="device-list" class="device-list"></div>
+			</section>
+
+			<section class="tab-panel" id="tab-network">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow" data-i18n="connection"></p>
+						<h2 data-i18n="network"></h2>
+						<p class="section-help" data-i18n="networkHelp"></p>
+					</div>
+				</div>
+				<div class="form-grid">
+					<label class="field"><span data-i18n="bindAddress"></span><input id="bindAddress" type="text"></label>
+					<label class="field"><span data-i18n="subnetCidr"></span><input id="subnetCidr" type="text"></label>
+					<label class="field"><span data-i18n="broadcastAddress"></span><input id="broadcastAddress" type="text"></label>
+					<label class="field"><span data-i18n="port"></span><input id="port" type="number" min="1" max="65535"></label>
+					<label class="field field-wide">
+						<span data-i18n="additionalTargets"></span>
+						<textarea id="additionalTargets" rows="3"></textarea>
+						<small data-i18n="listInputHelp"></small>
+					</label>
+					<label class="field"><span data-i18n="discoveryTimeoutMs"></span><input id="discoveryTimeoutMs" type="number" min="500" max="120000"></label>
+					<label class="field"><span data-i18n="apduTimeoutMs"></span><input id="apduTimeoutMs" type="number" min="250" max="60000"></label>
+					<label class="field"><span data-i18n="retries"></span><input id="retries" type="number" min="0" max="10"></label>
+					<label class="field"><span data-i18n="lowLimit"></span><input id="lowLimit" type="number" min="0" max="4194303"></label>
+					<label class="field"><span data-i18n="highLimit"></span><input id="highLimit" type="number" min="0" max="4194303"></label>
+					<label class="check-field"><input id="autoImportAll" type="checkbox"><span data-i18n="autoImportAll"></span></label>
+					<label class="field"><span data-i18n="staleScansBeforeDelete"></span><input id="staleScansBeforeDelete" type="number" min="1" max="100"></label>
+				</div>
+			</section>
+
+			<section class="tab-panel" id="tab-polling">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow" data-i18n="dataFlow"></p>
+						<h2 data-i18n="pollingAndWriting"></h2>
+						<p class="section-help" data-i18n="pollingHelp"></p>
+					</div>
+				</div>
+				<div class="settings-card">
+					<h3 data-i18n="reading"></h3>
+					<div class="form-grid">
+						<label class="check-field"><input id="pollingEnabled" type="checkbox"><span data-i18n="pollingEnabled"></span></label>
+						<label class="check-field"><input id="covEnabled" type="checkbox"><span data-i18n="covEnabled"></span></label>
+						<label class="field"><span data-i18n="pollIntervalMs"></span><input id="pollIntervalMs" type="number" min="1000" max="86400000"></label>
+						<label class="field"><span data-i18n="requestConcurrency"></span><input id="requestConcurrency" type="number" min="1" max="32"></label>
+						<label class="field"><span data-i18n="perDeviceConcurrency"></span><input id="perDeviceConcurrency" type="number" min="1" max="8"></label>
+					</div>
+				</div>
+				<div class="settings-card warning-card">
+					<h3 data-i18n="writing"></h3>
+					<p data-i18n="writeWarning"></p>
+					<div class="form-grid">
+						<label class="check-field"><input id="writeEnabled" type="checkbox"><span data-i18n="writeEnabled"></span></label>
+						<label class="field"><span data-i18n="writePriority"></span><input id="writePriority" type="number" min="1" max="16"></label>
+						<label class="field field-wide">
+							<span data-i18n="writeAllowlist"></span>
+							<textarea id="writeAllowlist" rows="5"></textarea>
+							<small data-i18n="listInputHelp"></small>
+						</label>
+					</div>
+				</div>
+			</section>
+
+			<section class="tab-panel" id="tab-diagnostics">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow" data-i18n="service"></p>
+						<h2 data-i18n="diagnostics"></h2>
+						<p class="section-help" data-i18n="diagnosticsHelp"></p>
+					</div>
+				</div>
+				<div class="action-toolbar">
+					<button type="button" class="primary-action" id="diagnostics-button" data-i18n="loadDiagnostics"></button>
+				</div>
+				<pre id="diagnostics-output" class="diagnostics-output"></pre>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		"use strict";
+
+		const defaults = {
+			bindAddress: "0.0.0.0",
+			subnetCidr: "",
+			broadcastAddress: "255.255.255.255",
+			port: 47808,
+			discoveryTimeoutMs: 5000,
+			lowLimit: null,
+			highLimit: null,
+			additionalTargets: [],
+			apduTimeoutMs: 3000,
+			retries: 2,
+			requestConcurrency: 4,
+			perDeviceConcurrency: 2,
+			pollIntervalMs: 30000,
+			pollingEnabled: true,
+			covEnabled: false,
+			writeEnabled: false,
+			writePriority: 16,
+			writeAllowlist: [],
+			staleScansBeforeDelete: 3,
+			autoImportAll: false,
+			deviceSelections: []
+		};
+		const textFields = [
+			"bindAddress", "subnetCidr", "broadcastAddress", "port", "discoveryTimeoutMs", "apduTimeoutMs",
+			"retries", "lowLimit", "highLimit", "staleScansBeforeDelete", "pollIntervalMs",
+			"requestConcurrency", "perDeviceConcurrency", "writePriority"
+		];
+		const checkboxFields = ["autoImportAll", "pollingEnabled", "covEnabled", "writeEnabled"];
+		const nullableNumbers = new Set(["lowLimit", "highLimit"]);
+		let settings = structuredClone(defaults);
+		let deviceCatalog = [];
+		let onSettingsChange = function () {};
+		let expandedDevices = new Set();
+		let operationTimer;
+
+		function tr(key) {
+			const entry = window.systemDictionary && window.systemDictionary[key];
+			const language = window.systemLang || "en";
+			return entry && (entry[language] || entry.en) || key;
+		}
+
+		function escapeHtml(value) {
+			return String(value == null ? "" : value)
+				.replaceAll("&", "&amp;")
+				.replaceAll("<", "&lt;")
+				.replaceAll(">", "&gt;")
+				.replaceAll('"', "&quot;")
+				.replaceAll("'", "&#039;");
+		}
+
+		function translatePage() {
+			document.querySelectorAll("[data-i18n]").forEach(element => {
+				element.textContent = tr(element.dataset.i18n);
+			});
+			document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+				element.placeholder = tr(element.dataset.i18nPlaceholder);
+			});
+		}
+
+		function normalizeSelections(value) {
+			if (!Array.isArray(value)) return [];
+			return value
+				.filter(item => item && Number.isInteger(Number(item.deviceInstance)))
+				.map(item => ({
+					deviceInstance: Number(item.deviceInstance),
+					description: typeof item.description === "string" ? item.description : "",
+					selectedPoints: [...new Set(Array.isArray(item.selectedPoints) ? item.selectedPoints : [])].sort()
+				}))
+				.sort((a, b) => a.deviceInstance - b.deviceInstance);
+		}
+
+		function ensureSelection(deviceInstance) {
+			let selection = settings.deviceSelections.find(item => item.deviceInstance === deviceInstance);
+			if (!selection) {
+				selection = { deviceInstance, description: "", selectedPoints: [] };
+				settings.deviceSelections.push(selection);
+				settings.deviceSelections.sort((a, b) => a.deviceInstance - b.deviceInstance);
+			}
+			return selection;
+		}
+
+		function selectedSet(deviceInstance) {
+			return new Set(ensureSelection(deviceInstance).selectedPoints);
+		}
+
+		function notifyChanged() {
+			onSettingsChange();
+		}
+
+		function setStatus(text, kind) {
+			const element = document.getElementById("operation-status");
+			element.textContent = text || "";
+			element.className = `operation-status ${kind || ""}`;
+		}
+
+		function addressText(address) {
+			if (!address) return "";
+			if (typeof address === "string") return address;
+			return address.address || address.mac || JSON.stringify(address);
+		}
+
+		function searchableDeviceText(device) {
+			return [
+				device.deviceInstance, device.objectName, device.vendorName, device.modelName, device.location,
+				device.deviceDescription, ensureSelection(device.deviceInstance).description, addressText(device.address)
+			].join(" ").toLowerCase();
+		}
+
+		function searchablePointText(point) {
+			return [
+				point.id, point.objectTypeName, point.objectType, point.objectInstance, point.objectName,
+				point.propertyName, point.propertyId
+			].join(" ").toLowerCase();
+		}
+
+		function renderCatalog() {
+			const container = document.getElementById("device-list");
+			const query = document.getElementById("catalog-search").value.trim().toLowerCase();
+			let activeCount = 0;
+			let selectedCount = 0;
+			const cards = [];
+
+			for (const device of deviceCatalog) {
+				if (device.active) activeCount++;
+				const selection = ensureSelection(device.deviceInstance);
+				const selected = new Set(selection.selectedPoints);
+				selectedCount += selected.size;
+				const deviceMatches = !query || searchableDeviceText(device).includes(query);
+				const matchingPoints = device.points.filter(point => !query || deviceMatches || searchablePointText(point).includes(query));
+				if (query && !deviceMatches && matchingPoints.length === 0) continue;
+				const expanded = expandedDevices.has(device.deviceInstance) || Boolean(query);
+				const statusLabel = device.active ? tr("active") : tr("inactive");
+				const metadata = [device.vendorName, device.modelName, device.location, addressText(device.address)]
+					.filter(Boolean)
+					.map(escapeHtml)
+					.join(" · ");
+				const pointRows = matchingPoints.map(point => `
+					<label class="point-row">
+						<input class="point-checkbox" type="checkbox"
+							data-device="${device.deviceInstance}"
+							data-point="${escapeHtml(point.id)}"
+							${selected.has(point.id) ? "checked" : ""}>
+						<span class="point-main">
+							<strong>${escapeHtml(point.objectName)}</strong>
+							<span>${escapeHtml(point.objectTypeName)} ${point.objectInstance} · ${escapeHtml(point.propertyName)}</span>
+						</span>
+						<code>${escapeHtml(point.id)}</code>
+					</label>
+				`).join("");
+
+				cards.push(`
+					<article class="device-card ${device.active ? "is-active" : "is-inactive"}">
+						<button type="button" class="device-header" data-toggle-device="${device.deviceInstance}" aria-expanded="${expanded}">
+							<span class="status-dot ${device.active ? "active" : "inactive"}" title="${escapeHtml(statusLabel)}"></span>
+							<span class="device-title">
+								<strong>${escapeHtml(device.objectName)}</strong>
+								<small>${tr("deviceInstance")} ${device.deviceInstance}${metadata ? ` · ${metadata}` : ""}</small>
+							</span>
+							<span class="device-badges">
+								<span class="badge">${device.imported ? `${device.points.length} ${tr("points")}` : tr("notRead")}</span>
+								<span class="chevron">${expanded ? "−" : "+"}</span>
+							</span>
+						</button>
+						<div class="device-content ${expanded ? "" : "collapsed"}">
+							<div class="device-controls">
+								<label class="field description-field">
+									<span>${tr("manualDescription")}</span>
+									<input class="device-description" type="text" maxlength="240"
+										data-device="${device.deviceInstance}"
+										value="${escapeHtml(selection.description)}"
+										placeholder="${escapeHtml(tr("descriptionPlaceholder"))}">
+								</label>
+								<div class="point-actions">
+									<button type="button" class="secondary-action import-device" data-device="${device.deviceInstance}">
+										${device.imported ? tr("rereadDevice") : tr("readDevice")}
+									</button>
+									<button type="button" class="quiet-action select-visible" data-device="${device.deviceInstance}">${tr("selectVisible")}</button>
+									<button type="button" class="quiet-action deselect-visible" data-device="${device.deviceInstance}">${tr("deselectVisible")}</button>
+								</div>
+							</div>
+							${device.conflict ? `<p class="inline-warning">${tr("deviceConflict")}</p>` : ""}
+							<div class="point-list">
+								${device.imported
+									? (pointRows || `<p class="empty-state">${tr("noPointsMatch")}</p>`)
+									: `<p class="empty-state">${tr("readDeviceFirst")}</p>`}
+							</div>
+						</div>
+					</article>
+				`);
+			}
+
+			container.innerHTML = cards.join("") || `<div class="empty-state large">${tr("noDevices")}</div>`;
+			document.getElementById("device-summary").textContent =
+				`${deviceCatalog.length} ${tr("devices")} · ${activeCount} ${tr("active")} · ${selectedCount} ${tr("selectedPoints")}`;
+		}
+
+		function adapterSend(command, message) {
+			return new Promise((resolve, reject) => {
+				let done = false;
+				const timeout = setTimeout(() => {
+					if (!done) {
+						done = true;
+						reject(new Error(tr("requestTimeout")));
+					}
+				}, 15000);
+				const callback = response => {
+					if (done) return;
+					done = true;
+					clearTimeout(timeout);
+					resolve(response);
+				};
+				try {
+					if (typeof sendTo === "function") {
+						sendTo(null, command, message || {}, callback);
+					} else if (window.socket && typeof window.socket.emit === "function") {
+						window.socket.emit("sendTo", `${window.adapter}.${window.instance}`, command, message || {}, callback);
+					} else {
+						throw new Error(tr("adapterConnectionMissing"));
+					}
+				} catch (error) {
+					clearTimeout(timeout);
+					reject(error);
+				}
+			});
+		}
+
+		async function refreshCatalog(silent) {
+			if (!silent) setStatus(tr("loadingDevices"), "busy");
+			try {
+				const response = await adapterSend("getDeviceCatalog", {});
+				if (!response || response.ok === false) throw new Error(response && response.error || tr("unknownError"));
+				deviceCatalog = Array.isArray(response.devices) ? response.devices : [];
+				for (const device of deviceCatalog) {
+					const selection = ensureSelection(Number(device.deviceInstance));
+					if (!selection.description && device.userDescription) selection.description = device.userDescription;
+				}
+				renderCatalog();
+				if (!silent) setStatus(tr("deviceListUpdated"), "success");
+			} catch (error) {
+				setStatus(`${tr("loadFailed")}: ${error.message || error}`, "error");
+			}
+		}
+
+		async function pollJob(command, completedText) {
+			clearTimeout(operationTimer);
+			try {
+				const response = await adapterSend(command, {});
+				const job = response && response.job;
+				if (!job || job.status !== "running") {
+					if (job && job.errors && job.errors.length) {
+						setStatus(job.errors.join("; "), "error");
+					} else {
+						setStatus(completedText, "success");
+					}
+					await refreshCatalog(true);
+					return;
+				}
+				setStatus(`${tr("working")} ${job.processed}${job.total == null ? "" : ` / ${job.total}`}`, "busy");
+				operationTimer = setTimeout(() => pollJob(command, completedText), 800);
+			} catch (error) {
+				setStatus(`${tr("operationFailed")}: ${error.message || error}`, "error");
+			}
+		}
+
+		async function startDiscovery() {
+			setStatus(tr("discoveryStarted"), "busy");
+			try {
+				const response = await adapterSend("startDiscovery", {});
+				if (!response || response.ok === false) throw new Error(response && response.error || tr("unknownError"));
+				await pollJob("getDiscoveryStatus", tr("discoveryCompleted"));
+			} catch (error) {
+				setStatus(`${tr("operationFailed")}: ${error.message || error}`, "error");
+			}
+		}
+
+		async function importDevices(instances) {
+			setStatus(tr("readingDeviceData"), "busy");
+			try {
+				const response = await adapterSend("importDevices", { deviceInstances: instances });
+				if (!response || response.ok === false) throw new Error(response && response.error || tr("unknownError"));
+				await pollJob("getImportStatus", tr("importCompleted"));
+			} catch (error) {
+				setStatus(`${tr("operationFailed")}: ${error.message || error}`, "error");
+			}
+		}
+
+		function bindEvents() {
+			document.querySelectorAll(".tab-button").forEach(button => button.addEventListener("click", () => {
+				document.querySelectorAll(".tab-button").forEach(item => item.classList.toggle("active", item === button));
+				document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${button.dataset.tab}`));
+			}));
+			document.getElementById("catalog-search").addEventListener("input", renderCatalog);
+			document.getElementById("clear-search").addEventListener("click", () => {
+				document.getElementById("catalog-search").value = "";
+				renderCatalog();
+			});
+			document.getElementById("discover-button").addEventListener("click", startDiscovery);
+			document.getElementById("cancel-discovery-button").addEventListener("click", async () => {
+				await adapterSend("cancelDiscovery", {});
+				clearTimeout(operationTimer);
+				setStatus(tr("discoveryCancelled"), "success");
+			});
+			document.getElementById("refresh-button").addEventListener("click", () => refreshCatalog(false));
+			document.getElementById("import-all-button").addEventListener("click", () => {
+				const instances = deviceCatalog.filter(device => !device.conflict).map(device => device.deviceInstance);
+				if (instances.length) importDevices(instances);
+			});
+			document.getElementById("diagnostics-button").addEventListener("click", async () => {
+				const output = document.getElementById("diagnostics-output");
+				output.textContent = tr("loading");
+				try {
+					const response = await adapterSend("getDiagnostics", {});
+					output.textContent = JSON.stringify(response && response.diagnostics || response, null, 2);
+				} catch (error) {
+					output.textContent = String(error.message || error);
+				}
+			});
+
+			document.getElementById("device-list").addEventListener("click", event => {
+				const toggle = event.target.closest("[data-toggle-device]");
+				if (toggle) {
+					const id = Number(toggle.dataset.toggleDevice);
+					expandedDevices.has(id) ? expandedDevices.delete(id) : expandedDevices.add(id);
+					renderCatalog();
+					return;
+				}
+				const importButton = event.target.closest(".import-device");
+				if (importButton) {
+					importDevices([Number(importButton.dataset.device)]);
+					return;
+				}
+				const selectButton = event.target.closest(".select-visible, .deselect-visible");
+				if (selectButton) {
+					const deviceInstance = Number(selectButton.dataset.device);
+					const query = document.getElementById("catalog-search").value.trim().toLowerCase();
+					const device = deviceCatalog.find(item => item.deviceInstance === deviceInstance);
+					if (!device) return;
+					const selection = ensureSelection(deviceInstance);
+					const values = new Set(selection.selectedPoints);
+					const visible = device.points.filter(point => !query || searchableDeviceText(device).includes(query) || searchablePointText(point).includes(query));
+					for (const point of visible) {
+						selectButton.classList.contains("select-visible") ? values.add(point.id) : values.delete(point.id);
+					}
+					selection.selectedPoints = [...values].sort();
+					notifyChanged();
+					renderCatalog();
+				}
+			});
+			document.getElementById("device-list").addEventListener("change", event => {
+				if (event.target.classList.contains("point-checkbox")) {
+					const deviceInstance = Number(event.target.dataset.device);
+					const selection = ensureSelection(deviceInstance);
+					const values = new Set(selection.selectedPoints);
+					event.target.checked ? values.add(event.target.dataset.point) : values.delete(event.target.dataset.point);
+					selection.selectedPoints = [...values].sort();
+					notifyChanged();
+					renderCatalog();
+				}
+			});
+			document.getElementById("device-list").addEventListener("input", event => {
+				if (event.target.classList.contains("device-description")) {
+					ensureSelection(Number(event.target.dataset.device)).description = event.target.value;
+					notifyChanged();
+				}
+			});
+			for (const id of [...textFields, ...checkboxFields, "additionalTargets", "writeAllowlist"]) {
+				document.getElementById(id).addEventListener("input", notifyChanged);
+				document.getElementById(id).addEventListener("change", notifyChanged);
+			}
+		}
+
+		function load(nativeSettings, onChange) {
+			settings = { ...structuredClone(defaults), ...(nativeSettings || {}) };
+			settings.deviceSelections = normalizeSelections(settings.deviceSelections);
+			onSettingsChange = onChange;
+			for (const id of textFields) {
+				document.getElementById(id).value = settings[id] == null ? "" : settings[id];
+			}
+			for (const id of checkboxFields) {
+				document.getElementById(id).checked = Boolean(settings[id]);
+			}
+			document.getElementById("additionalTargets").value = (settings.additionalTargets || []).join("\n");
+			document.getElementById("writeAllowlist").value = (settings.writeAllowlist || []).join("\n");
+			onChange(false);
+			setTimeout(() => refreshCatalog(true), 150);
+		}
+
+		function save(callback) {
+			for (const id of textFields) {
+				const value = document.getElementById(id).value.trim();
+				settings[id] = nullableNumbers.has(id) && value === "" ? null : Number.isNaN(Number(value)) ? value : Number(value);
+			}
+			for (const id of checkboxFields) settings[id] = document.getElementById(id).checked;
+			settings.additionalTargets = document.getElementById("additionalTargets").value
+				.split(/[\n,;]+/).map(value => value.trim()).filter(Boolean);
+			settings.writeAllowlist = document.getElementById("writeAllowlist").value
+				.split(/[\n,;]+/).map(value => value.trim()).filter(Boolean);
+			settings.deviceSelections = normalizeSelections(settings.deviceSelections);
+			callback(settings);
+		}
+
+		translatePage();
+		bindEvents();
+	</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 The adapter is a single native ioBroker process. BACnet transport, discovery, inventory, mapping, scheduling, reconciliation, persistence, COV and writing are separate modules under `src/lib`.
 
 ```text
-Admin/message commands
+Admin UI/message commands
         │
         ▼
   Job coordinator ──────► DiscoveryManager
@@ -23,6 +23,8 @@ Admin/message commands
 - `BoundedQueue` is used in discovery enrichment, indexed array reads, imports and polling. Hot-path lookups use maps.
 - `Object_List` and `Property_List` are read by array index. RPM batches fall back to single reads.
 - Reconciliation updates stable IDs and preserves unrelated object metadata through ioBroker `extendObject`. Stale planning never recursively deletes the device tree.
+- The selected-point allowlist is stored in the instance native configuration. Reconciliation creates only selected states, while cleanup removes deselected states and empty descendants strictly below the adapter's own `devices` folder.
+- Cached inventories restore known devices and selectable point coordinates after restart. A current discovery result alone determines the green/red activity indicator.
 - The inventory file has schema version 1 and uses temporary-file-plus-rename atomic replacement. A corrupt or unknown schema recovers to an empty technical cache.
 - Remote values and confirmed readbacks use `ack: true`. Commands arrive with `ack: false`.
 - `SafeWriter` requires a global switch, stable-ID allowlist, supported Present_Value target and valid priority.
